@@ -1,0 +1,39 @@
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import { connectDB } from './config/db.js';
+import authRoutes from './routes/authRoutes.js';
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
+
+// Middlewares
+app.use(cors({
+  origin: [CLIENT_URL, 'http://localhost:3000', 'http://localhost:5173'],
+  credentials: true
+}));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Health check endpoint
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'OK', system: 'Researcher Campus Express API Server', timestamp: new Date() });
+});
+
+// Mounting Router
+app.use('/api/auth', authRoutes);
+app.use('/api/user', authRoutes);
+
+// Bootstrap Server
+async function startServer() {
+  await connectDB();
+  app.listen(PORT, () => {
+    console.log(`[Express API Server] Running on http://localhost:${PORT}`);
+  });
+}
+
+startServer();
