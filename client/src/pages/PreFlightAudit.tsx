@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   ShieldCheck, AlertTriangle, AlertCircle, Sparkles, CheckCircle2, 
-  ArrowRight, FileCheck, RefreshCw, Eye, BookOpen, UserX, FileText
+  ArrowRight, FileCheck, RefreshCw, Eye, BookOpen, UserX, FileText, X
 } from 'lucide-react';
 import { Navbar } from '../components/layout/Navbar';
 import { Card } from '../components/ui/Card';
@@ -24,6 +24,7 @@ export function PreFlightAudit() {
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState<boolean>(true);
   const [fixing, setFixing] = useState<boolean>(false);
+  const [showDiffModal, setShowDiffModal] = useState<boolean>(false);
   const [auditScore, setAuditScore] = useState<number>(72);
   const [isPassed, setIsPassed] = useState<boolean>(false);
 
@@ -158,13 +159,23 @@ export function PreFlightAudit() {
                 </div>
 
                 {issues.length > 0 && (
-                  <Button
-                    onClick={handleApplyAutoFix}
-                    isLoading={fixing}
-                    leftIcon={<Sparkles className="w-4 h-4 text-amber-300" />}
-                  >
-                    1-Click AI Auto-Fix Issues
-                  </Button>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setShowDiffModal(true)}
+                      leftIcon={<Eye className="w-3.5 h-3.5 text-navy-800" />}
+                    >
+                      Review AI Diffs
+                    </Button>
+                    <Button
+                      onClick={handleApplyAutoFix}
+                      isLoading={fixing}
+                      leftIcon={<Sparkles className="w-4 h-4 text-amber-300" />}
+                    >
+                      1-Click AI Auto-Fix
+                    </Button>
+                  </div>
                 )}
               </div>
 
@@ -254,6 +265,46 @@ export function PreFlightAudit() {
           </>
         )}
       </main>
+
+      {/* AI Auto-Fix Diff Viewer Modal */}
+      {showDiffModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-6">
+          <div className="bg-white border border-slate-300 rounded shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+              <div className="flex items-center space-x-2">
+                <Eye className="w-5 h-5 text-navy-800" />
+                <h3 className="font-bold text-slate-900 text-base">AI Auto-Fix Line-by-Line Diff Review</h3>
+              </div>
+              <button onClick={() => setShowDiffModal(false)} className="text-slate-400 hover:text-slate-600 p-1">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex-1 p-5 overflow-y-auto font-mono text-xs space-y-3 bg-white">
+              <div className="p-3 bg-red-50 border border-red-200 rounded text-red-900">
+                <span className="font-bold block mb-1">Line 12 (Author Anonymity Leak Removal):</span>
+                <span className="line-through block text-red-700">- John Doe • Department of Computer Science</span>
+                <span className="text-emerald-700 font-bold block">+ [Anonymized for Double-Blind Review]</span>
+              </div>
+
+              <div className="p-3 bg-red-50 border border-red-200 rounded text-red-900">
+                <span className="font-bold block mb-1">Line 42 (Academic Tone Refinement):</span>
+                <span className="line-through block text-red-700">- We observed a lot of latency reduction...</span>
+                <span className="text-emerald-700 font-bold block">+ We observed substantial, statistically robust latency reduction...</span>
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-slate-200 flex justify-end space-x-3 bg-slate-50">
+              <Button variant="secondary" size="sm" onClick={() => setShowDiffModal(false)}>
+                Close Preview
+              </Button>
+              <Button size="sm" onClick={() => { setShowDiffModal(false); handleApplyAutoFix(); }}>
+                Apply Diff Changes Now
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

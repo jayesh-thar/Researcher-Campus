@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { executeMultiEngineLiteratureScan } from '../services/literatureService.js';
-import { Project } from '../models/Project.js';
+import { Project, ILiteratureItem } from '../models/Project.js';
 import { requireAuth, AuthenticatedRequest } from '../middlewares/authMiddleware.js';
 
 const router = Router();
@@ -20,7 +20,6 @@ router.post('/scan', requireAuth, async (req: AuthenticatedRequest, res: Respons
       methodologyOverview
     );
 
-    // If projectId is passed, update the project in MongoDB
     if (projectId) {
       const project = await Project.findById(projectId);
       if (project) {
@@ -44,6 +43,55 @@ router.post('/scan', requireAuth, async (req: AuthenticatedRequest, res: Respons
   }
 });
 
+// POST /api/project/:id/literature/import
+router.post('/project/:id/literature/import', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { bibtexText } = req.body;
+
+    if (!bibtexText || typeof bibtexText !== 'string') {
+      return res.status(400).json({ error: 'bibtexText string is required' });
+    }
+
+    const project = await Project.findById(id);
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    // Parse BibTeX entry title and authors
+    const titleMatch = bibtexText.match(/title\s*=\s*[\{"]([^"\}]+)["\}]/i);
+    const authorMatch = bibtexText.match(/author\s*=\s*[\{"]([^"\}]+)["\}]/i);
+    const yearMatch = bibtexText.match(/year\s*=\s*[\{"]?(\d{4})["\}]?/i);
+    const journalMatch = bibtexText.match(/(?:journal|booktitle)\s*=\s*[\{"]([^"\}]+)["\}]/i);
+
+    const newItem: ILiteratureItem = {
+      id: `lit-imported-${Date.now()}`,
+      title: titleMatch ? titleMatch[1] : 'Imported Academic Citation',
+      authors: authorMatch ? authorMatch[1].split(' and ') : ['External Author'],
+      year: yearMatch ? parseInt(yearMatch[1], 10) : 2025,
+      venue: journalMatch ? journalMatch[1] : 'Peer-Reviewed Conference / Journal',
+      doiUrl: 'https://doi.org/10.1145/imported.ref',
+      similarity: 10,
+      keyTakeaway: 'Imported reference added via BibTeX manager.',
+      category: 'REFERENCE',
+      bibtex: bibtexText
+    };
+
+    project.literature.push(newItem);
+    project.markModified('literature');
+    await project.save();
+
+    return res.json({
+      message: 'BibTeX reference imported successfully',
+      importedItem: newItem,
+      literature: project.literature
+    });
+  } catch (error) {
+    console.error('BibTeX import error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 // POST /api/project/create
 router.post('/project/create', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
@@ -61,7 +109,6 @@ router.post('/project/create', requireAuth, async (req: AuthenticatedRequest, re
       return res.status(400).json({ error: 'Title and rawInput are required' });
     }
 
-    // Automatically trigger Gate literature scan
     const gateScan = await executeMultiEngineLiteratureScan(
       academicTitle || title,
       problemStatement || '',

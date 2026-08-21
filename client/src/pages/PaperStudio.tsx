@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   FileText, Download, Save, Cloud, Sparkles, ArrowRight, 
-  Columns2, Eye, Code, AtSign, Calculator, Layers, FileCode
+  Columns2, Eye, Code, AtSign, Calculator, Layers, FileCode, Printer, X
 } from 'lucide-react';
 import { Navbar } from '../components/layout/Navbar';
 import { Card } from '../components/ui/Card';
@@ -13,6 +13,7 @@ import { api } from '../services/api';
 export function PaperStudio() {
   const { id } = useParams<{ id: string }>();
   const [template, setTemplate] = useState<'IEEE' | 'ACM' | 'NATURE' | 'MANUSCRIPT'>('IEEE');
+  const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
   const [markdown, setMarkdown] = useState<string>(`# StudentTasker: Intelligent Constraint-Aware Academic Task Scheduling
 
 ## Abstract
@@ -139,6 +140,15 @@ ${markdown.slice(0, 300)}...
             <Cloud className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
             <span>{syncStatus}</span>
           </div>
+
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setShowPrintModal(true)}
+            leftIcon={<Printer className="w-3.5 h-3.5 text-navy-800" />}
+          >
+            PDF / Print View
+          </Button>
 
           <Button
             variant="secondary"
@@ -300,6 +310,53 @@ ${markdown.slice(0, 300)}...
           </div>
         </Card>
       </main>
+
+      {/* PDF Print Preview Modal */}
+      {showPrintModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-6">
+          <div className="bg-white border border-slate-300 rounded shadow-2xl max-w-3xl w-full max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+              <div className="flex items-center space-x-2">
+                <Printer className="w-5 h-5 text-navy-800" />
+                <h3 className="font-bold text-slate-900 text-base">IEEE / ACM PDF Print Preview</h3>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Button size="sm" onClick={() => window.print()} leftIcon={<Printer className="w-3.5 h-3.5" />}>
+                  Trigger Print (Save to PDF)
+                </Button>
+                <button onClick={() => setShowPrintModal(false)} className="text-slate-400 hover:text-slate-600 p-1">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 p-8 overflow-y-auto font-serif text-slate-900 space-y-4 bg-white">
+              <div className="columns-2 gap-6 text-xs leading-relaxed">
+                <div className="break-inside-avoid">
+                  <h1 className="font-sans font-bold text-lg text-slate-900 tracking-tight leading-tight mb-2">
+                    StudentTasker: Intelligent Constraint-Aware Academic Task Scheduling
+                  </h1>
+                  <div className="font-sans text-[11px] text-slate-500 font-medium mb-3 pb-2 border-b border-slate-200">
+                    John Doe • Department of Computer Science • University Campus
+                  </div>
+                </div>
+
+                <div className="break-inside-avoid bg-slate-50 p-3 border border-slate-200 rounded font-sans text-[11px]">
+                  <span className="font-bold text-navy-800 block mb-1 uppercase tracking-wider">Abstract</span>
+                  Contemporary implementations in Software & Distributed Systems exhibit latency bottlenecks under dynamic student workloads. We propose an event-driven algorithm evaluating prerequisite dependency graph heuristics.
+                </div>
+
+                <div className="break-inside-avoid font-sans mt-3">
+                  <h2 className="font-bold text-slate-900 text-xs mb-1 border-b border-slate-200">1. Introduction</h2>
+                  <p className="text-[11px] text-slate-700">
+                    Academic workload fragmentation remains a critical challenge. As demonstrated by [Chen et al., 2024], static priority queues fail to adapt under localized distraction conditions.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
