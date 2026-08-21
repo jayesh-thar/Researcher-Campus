@@ -2,6 +2,8 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { ArrowRight, BookOpen, ShieldCheck, Cpu, Layers } from 'lucide-react';
 import { Dashboard } from './pages/Dashboard';
+import { IdeaLab } from './pages/IdeaLab';
+import { GateReport } from './pages/GateReport';
 
 function Home() {
   return (
@@ -112,6 +114,8 @@ export function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/project/new" element={<IdeaLab />} />
+        <Route path="/project/:id/report" element={<GateReport />} />
       </Routes>
     </BrowserRouter>
   );

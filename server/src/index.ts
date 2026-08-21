@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
+import aiRoutes from './routes/aiRoutes.js';
+import literatureRoutes from './routes/literatureRoutes.js';
 
 dotenv.config();
 
@@ -24,9 +26,12 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'OK', system: 'Researcher Campus Express API Server', timestamp: new Date() });
 });
 
-// Mounting Router
+// Mounting Routers
 app.use('/api/auth', authRoutes);
 app.use('/api/user', authRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/literature', literatureRoutes);
+app.use('/api/project', literatureRoutes);
 
 // Bootstrap Server
 async function startServer() {
