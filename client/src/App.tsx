@@ -4,6 +4,8 @@ import { ArrowRight, BookOpen, ShieldCheck, Cpu, Layers } from 'lucide-react';
 import { Dashboard } from './pages/Dashboard';
 import { IdeaLab } from './pages/IdeaLab';
 import { GateReport } from './pages/GateReport';
+import { WhitespaceBoard } from './pages/WhitespaceBoard';
+import { Roadmap } from './pages/Roadmap';
 
 function Home() {
   return (
@@ -116,6 +118,8 @@ export function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/project/new" element={<IdeaLab />} />
         <Route path="/project/:id/report" element={<GateReport />} />
+        <Route path="/project/:id/literature" element={<WhitespaceBoard />} />
+        <Route path="/project/:id/roadmap" element={<Roadmap />} />
       </Routes>
     </BrowserRouter>
   );
