@@ -10,10 +10,8 @@
 
 | Resource Document | Link | Description |
 | :--- | :--- | :--- |
-| 🎬 **Live Demo & Walkthrough Guide** | [`DEMO.md`](file:///c:/Users/Lenovo/OneDrive/Desktop/research%20campus/DEMO.md) | Step-by-step instructions for initializing local servers and running a live demo |
-| 🏗️ **Technical Architecture Document** | [`ARCHITECTURE.md`](file:///c:/Users/Lenovo/OneDrive/Desktop/research%20campus/ARCHITECTURE.md) | Deep-dive topology, Mermaid sequence diagrams, security & database schemas |
-| 📄 **Master Technical Report (v01)** | [`reports/FULL_PROJECT_REPORT_VERSION01.md`](file:///c:/Users/Lenovo/OneDrive/Desktop/research%20campus/reports/FULL_PROJECT_REPORT_VERSION01.md) | Comprehensive engineering changelog & build verification across all 7 phases |
-| 💡 **Master Educational Guide (v01)** | [`understanding/FULL_PROJECT_UNDERSTANDING_VERSION01.md`](file:///c:/Users/Lenovo/OneDrive/Desktop/research%20campus/understanding/FULL_PROJECT_UNDERSTANDING_VERSION01.md) | Plain-English explanation of internal algorithms, security & user flows |
+| 🎬 **Live Demo & Walkthrough Guide** | [`DEMO.md`](https://github.com/jayesh-thar/Researcher-Campus/blob/main/DEMO.md) | Step-by-step instructions for initializing local servers and running a live demo |
+| 🏗️ **Technical Architecture Document** | [`ARCHITECTURE.md`](https://github.com/jayesh-thar/Researcher-Campus/blob/main/ARCHITECTURE.md) | Deep-dive topology, Mermaid sequence diagrams, security & database schemas |
 
 ---
 
