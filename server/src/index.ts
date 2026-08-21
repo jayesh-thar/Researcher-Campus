@@ -8,6 +8,7 @@ import literatureRoutes from './routes/literatureRoutes.js';
 import roadmapRoutes from './routes/roadmapRoutes.js';
 import driveRoutes from './routes/driveRoutes.js';
 import auditRoutes from './routes/auditRoutes.js';
+import venueRoutes from './routes/venueRoutes.js';
 
 dotenv.config();
 
@@ -40,6 +41,8 @@ app.use('/api/project', roadmapRoutes);
 app.use('/api/drive', driveRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/project', auditRoutes);
+app.use('/api', venueRoutes);
+app.use('/api/project', venueRoutes);
 
 // Bootstrap Server
 async function startServer() {

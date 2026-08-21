@@ -8,6 +8,7 @@ import { WhitespaceBoard } from './pages/WhitespaceBoard';
 import { Roadmap } from './pages/Roadmap';
 import { PaperStudio } from './pages/PaperStudio';
 import { PreFlightAudit } from './pages/PreFlightAudit';
+import { VenueMatcher } from './pages/VenueMatcher';
 
 function Home() {
   return (
@@ -124,6 +125,7 @@ export function App() {
         <Route path="/project/:id/roadmap" element={<Roadmap />} />
         <Route path="/project/:id/editor" element={<PaperStudio />} />
         <Route path="/project/:id/audit" element={<PreFlightAudit />} />
+        <Route path="/project/:id/venues" element={<VenueMatcher />} />
       </Routes>
     </BrowserRouter>
   );
