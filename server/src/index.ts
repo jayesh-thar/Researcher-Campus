@@ -6,6 +6,7 @@ import authRoutes from './routes/authRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
 import literatureRoutes from './routes/literatureRoutes.js';
 import roadmapRoutes from './routes/roadmapRoutes.js';
+import driveRoutes from './routes/driveRoutes.js';
 
 dotenv.config();
 
@@ -35,6 +36,7 @@ app.use('/api/literature', literatureRoutes);
 app.use('/api/project', literatureRoutes);
 app.use('/api/roadmap', roadmapRoutes);
 app.use('/api/project', roadmapRoutes);
+app.use('/api/drive', driveRoutes);
 
 // Bootstrap Server
 async function startServer() {

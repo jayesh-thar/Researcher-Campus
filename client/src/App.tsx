@@ -6,6 +6,7 @@ import { IdeaLab } from './pages/IdeaLab';
 import { GateReport } from './pages/GateReport';
 import { WhitespaceBoard } from './pages/WhitespaceBoard';
 import { Roadmap } from './pages/Roadmap';
+import { PaperStudio } from './pages/PaperStudio';
 
 function Home() {
   return (
@@ -120,6 +121,7 @@ export function App() {
         <Route path="/project/:id/report" element={<GateReport />} />
         <Route path="/project/:id/literature" element={<WhitespaceBoard />} />
         <Route path="/project/:id/roadmap" element={<Roadmap />} />
+        <Route path="/project/:id/editor" element={<PaperStudio />} />
       </Routes>
     </BrowserRouter>
   );
