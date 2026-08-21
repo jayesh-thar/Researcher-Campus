@@ -7,6 +7,7 @@ import { GateReport } from './pages/GateReport';
 import { WhitespaceBoard } from './pages/WhitespaceBoard';
 import { Roadmap } from './pages/Roadmap';
 import { PaperStudio } from './pages/PaperStudio';
+import { PreFlightAudit } from './pages/PreFlightAudit';
 
 function Home() {
   return (
@@ -122,6 +123,7 @@ export function App() {
         <Route path="/project/:id/literature" element={<WhitespaceBoard />} />
         <Route path="/project/:id/roadmap" element={<Roadmap />} />
         <Route path="/project/:id/editor" element={<PaperStudio />} />
+        <Route path="/project/:id/audit" element={<PreFlightAudit />} />
       </Routes>
     </BrowserRouter>
   );
