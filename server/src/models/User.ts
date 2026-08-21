@@ -1,58 +1,65 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IUser extends Document {
-  _id: mongoose.Types.ObjectId;
-  email: string;
-  passwordHash: string;
   name: string;
+  email: string;
+  passwordHash?: string;
+  googleId?: string;
   avatarUrl?: string;
   persona: 'STUDENT' | 'PHD' | 'PROFESSOR' | 'INDUSTRY' | 'INDEPENDENT';
   primaryDomain: string;
-  targetVenue: 'IEEE' | 'ACM' | 'SPRINGER' | 'NATURE' | 'ARXIV';
-  techStack: string[];
+  targetVenuePreference?: string;
+  techStack?: string[];
+  isCompletedOnboarding: boolean;
   subscription: {
-    tier: 'FREE' | 'PRO' | 'LAB';
+    plan: 'FREE' | 'PRO' | 'INSTITUTION';
     monthlyQuota: number;
     usedThisMonth: number;
-    resetAt: Date;
+    resetDate: Date;
   };
   googleDrive: {
     isConnected: boolean;
     encryptedRefreshToken?: string;
-    rootFolderId?: string;
+    folderId?: string;
+    lastSyncedAt?: Date;
   };
   createdAt: Date;
   updatedAt: Date;
 }
 
-const UserSchema = new Schema<IUser>({
-  email: { type: String, required: true, unique: true, index: true },
-  passwordHash: { type: String, required: true },
-  name: { type: String, required: true },
-  avatarUrl: { type: String },
-  persona: {
-    type: String,
-    enum: ['STUDENT', 'PHD', 'PROFESSOR', 'INDUSTRY', 'INDEPENDENT'],
-    default: 'STUDENT'
+const UserSchema: Schema = new Schema<IUser>(
+  {
+    name: { type: String, required: true, trim: true },
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    passwordHash: { type: String },
+    googleId: { type: String },
+    avatarUrl: { type: String },
+    persona: {
+      type: String,
+      enum: ['STUDENT', 'PHD', 'PROFESSOR', 'INDUSTRY', 'INDEPENDENT'],
+      default: 'STUDENT'
+    },
+    primaryDomain: {
+      type: String,
+      default: '💻 Software & Distributed Systems'
+    },
+    targetVenuePreference: { type: String, default: 'IEEE Conference' },
+    techStack: [{ type: String }],
+    isCompletedOnboarding: { type: Boolean, default: false },
+    subscription: {
+      plan: { type: String, enum: ['FREE', 'PRO', 'INSTITUTION'], default: 'FREE' },
+      monthlyQuota: { type: Number, default: 100 },
+      usedThisMonth: { type: Number, default: 0 },
+      resetDate: { type: Date, default: Date.now }
+    },
+    googleDrive: {
+      isConnected: { type: Boolean, default: false },
+      encryptedRefreshToken: { type: String },
+      folderId: { type: String },
+      lastSyncedAt: { type: Date }
+    }
   },
-  primaryDomain: { type: String, default: '💻 Software & Distributed Systems' },
-  targetVenue: {
-    type: String,
-    enum: ['IEEE', 'ACM', 'SPRINGER', 'NATURE', 'ARXIV'],
-    default: 'IEEE'
-  },
-  techStack: [{ type: String }],
-  subscription: {
-    tier: { type: String, enum: ['FREE', 'PRO', 'LAB'], default: 'FREE' },
-    monthlyQuota: { type: Number, default: 100 },
-    usedThisMonth: { type: Number, default: 0 },
-    resetAt: { type: Date, default: Date.now }
-  },
-  googleDrive: {
-    isConnected: { type: Boolean, default: false },
-    encryptedRefreshToken: { type: String },
-    rootFolderId: { type: String }
-  }
-}, { timestamps: true });
+  { timestamps: true }
+);
 
-export const User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
+export const User = mongoose.model<IUser>('User', UserSchema);

@@ -9,6 +9,9 @@ import { Roadmap } from './pages/Roadmap';
 import { PaperStudio } from './pages/PaperStudio';
 import { PreFlightAudit } from './pages/PreFlightAudit';
 import { VenueMatcher } from './pages/VenueMatcher';
+import { Login } from './pages/Login';
+import { Onboarding } from './pages/Onboarding';
+import { ProfileSettings } from './pages/ProfileSettings';
 
 function Home() {
   return (
@@ -118,6 +121,9 @@ export function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/profile" element={<ProfileSettings />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/project/new" element={<IdeaLab />} />
         <Route path="/project/:id/report" element={<GateReport />} />

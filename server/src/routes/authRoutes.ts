@@ -5,19 +5,20 @@ import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/
 import { requireAuth, AuthenticatedRequest } from '../middlewares/authMiddleware.js';
 
 const router = Router();
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 // POST /api/auth/register
 router.post('/register', async (req: Request, res: Response) => {
   try {
-    const { name, email, password, persona, primaryDomain, targetVenue, techStack } = req.body;
+    const { name, email, password, persona, primaryDomain } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'Name, email, and password are required' });
     }
 
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(409).json({ error: 'User with this email already exists' });
+      return res.status(400).json({ error: 'User with this email already exists' });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -25,46 +26,38 @@ router.post('/register', async (req: Request, res: Response) => {
 
     const user = await User.create({
       name,
-      email: email.toLowerCase(),
+      email,
       passwordHash,
       persona: persona || 'STUDENT',
       primaryDomain: primaryDomain || '💻 Software & Distributed Systems',
-      targetVenue: targetVenue || 'IEEE',
-      techStack: techStack || ['Python', 'TypeScript'],
-      subscription: {
-        tier: 'FREE',
-        monthlyQuota: 100,
-        usedThisMonth: 0,
-        resetAt: new Date()
-      }
+      isCompletedOnboarding: false
     });
 
-    const tokenPayload = { userId: user._id.toString(), email: user.email, tier: user.subscription.tier };
-    const accessToken = signAccessToken(tokenPayload);
-    const refreshToken = signRefreshToken(tokenPayload);
+    const accessToken = signAccessToken({ userId: user._id.toString(), email: user.email, tier: 'FREE' });
+    const refreshToken = signRefreshToken({ userId: user._id.toString(), email: user.email, tier: 'FREE' });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      maxAge: SEVEN_DAYS_MS
     });
 
     return res.status(201).json({
       message: 'Registration successful',
+      accessToken,
       user: {
-        id: user._id.toString(),
+        id: user._id,
         name: user.name,
         email: user.email,
         persona: user.persona,
         primaryDomain: user.primaryDomain,
-        targetVenue: user.targetVenue,
-        subscription: user.subscription
-      },
-      accessToken
+        isCompletedOnboarding: user.isCompletedOnboarding,
+        googleDriveConnected: user.googleDrive.isConnected
+      }
     });
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error('Register error:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 });
@@ -78,39 +71,38 @@ router.post('/login', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+    const user = await User.findOne({ email });
+    if (!user || !user.passwordHash) {
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const tokenPayload = { userId: user._id.toString(), email: user.email, tier: user.subscription.tier };
-    const accessToken = signAccessToken(tokenPayload);
-    const refreshToken = signRefreshToken(tokenPayload);
+    const accessToken = signAccessToken({ userId: user._id.toString(), email: user.email, tier: 'FREE' });
+    const refreshToken = signRefreshToken({ userId: user._id.toString(), email: user.email, tier: 'FREE' });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000
+      maxAge: SEVEN_DAYS_MS
     });
 
     return res.json({
       message: 'Login successful',
+      accessToken,
       user: {
-        id: user._id.toString(),
+        id: user._id,
         name: user.name,
         email: user.email,
         persona: user.persona,
         primaryDomain: user.primaryDomain,
-        targetVenue: user.targetVenue,
-        subscription: user.subscription
-      },
-      accessToken
+        isCompletedOnboarding: user.isCompletedOnboarding,
+        googleDriveConnected: user.googleDrive.isConnected
+      }
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -118,47 +110,76 @@ router.post('/login', async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/auth/refresh
-router.post('/refresh', async (req: Request, res: Response) => {
+// POST /api/auth/google
+router.post('/google', async (req: Request, res: Response) => {
   try {
-    const refreshToken = req.cookies?.refreshToken;
-    if (!refreshToken) {
-      return res.status(401).json({ error: 'Refresh token not found' });
+    const { googleId, name, email, avatarUrl } = req.body;
+
+    if (!email || !name) {
+      return res.status(400).json({ error: 'Google authentication data missing' });
     }
 
-    const payload = verifyRefreshToken(refreshToken);
-    if (!payload) {
-      return res.status(401).json({ error: 'Invalid or expired refresh token' });
-    }
+    let user = await User.findOne({ $or: [{ googleId }, { email }] });
 
-    const user = await User.findById(payload.userId);
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      user = await User.create({
+        name,
+        email,
+        googleId: googleId || `google-${Date.now()}`,
+        avatarUrl,
+        isCompletedOnboarding: false
+      });
+    } else if (!user.googleId) {
+      user.googleId = googleId || `google-${Date.now()}`;
+      if (avatarUrl) user.avatarUrl = avatarUrl;
+      await user.save();
     }
 
-    const tokenPayload = { userId: user._id.toString(), email: user.email, tier: user.subscription.tier };
-    const newAccessToken = signAccessToken(tokenPayload);
-    const newRefreshToken = signRefreshToken(tokenPayload);
+    const accessToken = signAccessToken({ userId: user._id.toString(), email: user.email, tier: 'FREE' });
+    const refreshToken = signRefreshToken({ userId: user._id.toString(), email: user.email, tier: 'FREE' });
 
-    res.cookie('refreshToken', newRefreshToken, {
+    res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000
+      maxAge: SEVEN_DAYS_MS
     });
 
     return res.json({
-      accessToken: newAccessToken,
+      message: 'Google Login successful',
+      accessToken,
       user: {
-        id: user._id.toString(),
+        id: user._id,
         name: user.name,
         email: user.email,
-        subscription: user.subscription
+        persona: user.persona,
+        primaryDomain: user.primaryDomain,
+        isCompletedOnboarding: user.isCompletedOnboarding,
+        googleDriveConnected: user.googleDrive.isConnected
       }
     });
   } catch (error) {
-    console.error('Refresh token error:', error);
+    console.error('Google Auth error:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// POST /api/auth/refresh
+router.post('/refresh', (req: Request, res: Response) => {
+  const refreshToken = req.cookies?.refreshToken;
+  if (!refreshToken) {
+    return res.status(401).json({ error: 'Refresh Token Missing' });
+  }
+
+  try {
+    const payload = verifyRefreshToken(refreshToken);
+    if (!payload) {
+      return res.status(401).json({ error: 'Invalid or Expired Refresh Token' });
+    }
+    const accessToken = signAccessToken({ userId: payload.userId, email: payload.email || '', tier: 'FREE' });
+    return res.json({ accessToken });
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid or Expired Refresh Token' });
   }
 });
 
@@ -172,23 +193,67 @@ router.post('/logout', (_req: Request, res: Response) => {
 router.get('/profile', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.userId;
-    const user = await User.findById(userId).select('-passwordHash -googleDrive.encryptedRefreshToken');
+    const user = await User.findById(userId).select('-passwordHash');
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-
     return res.json({ user });
   } catch (error) {
-    console.error('Get profile error:', error);
+    console.error('Fetch profile error:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-// PUT /api/user/profile
-router.put('/profile', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+// PUT /api/user/onboarding
+router.put('/onboarding', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.userId;
-    const { name, persona, primaryDomain, targetVenue, techStack } = req.body;
+    const { persona, primaryDomain, targetVenuePreference, techStack, connectDrive } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (persona) user.persona = persona;
+    if (primaryDomain) user.primaryDomain = primaryDomain;
+    if (targetVenuePreference) user.targetVenuePreference = targetVenuePreference;
+    if (techStack) user.techStack = techStack;
+    user.isCompletedOnboarding = true;
+
+    if (connectDrive) {
+      user.googleDrive = {
+        isConnected: true,
+        lastSyncedAt: new Date()
+      };
+    }
+
+    await user.save();
+
+    return res.json({
+      message: 'Onboarding completed successfully',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        persona: user.persona,
+        primaryDomain: user.primaryDomain,
+        targetVenuePreference: user.targetVenuePreference,
+        isCompletedOnboarding: user.isCompletedOnboarding,
+        googleDriveConnected: user.googleDrive.isConnected
+      }
+    });
+  } catch (error) {
+    console.error('Onboarding update error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// PUT /api/user/settings
+router.put('/settings', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user?.userId;
+    const { name, persona, primaryDomain, targetVenuePreference, disconnectDrive, newPassword } = req.body;
 
     const user = await User.findById(userId);
     if (!user) {
@@ -198,26 +263,26 @@ router.put('/profile', requireAuth, async (req: AuthenticatedRequest, res: Respo
     if (name) user.name = name;
     if (persona) user.persona = persona;
     if (primaryDomain) user.primaryDomain = primaryDomain;
-    if (targetVenue) user.targetVenue = targetVenue;
-    if (techStack && Array.isArray(techStack)) user.techStack = techStack;
+    if (targetVenuePreference) user.targetVenuePreference = targetVenuePreference;
+
+    if (disconnectDrive) {
+      user.googleDrive.isConnected = false;
+      user.googleDrive.encryptedRefreshToken = undefined;
+    }
+
+    if (newPassword) {
+      const salt = await bcrypt.genSalt(10);
+      user.passwordHash = await bcrypt.hash(newPassword, salt);
+    }
 
     await user.save();
 
     return res.json({
-      message: 'Profile updated successfully',
-      user: {
-        id: user._id.toString(),
-        name: user.name,
-        email: user.email,
-        persona: user.persona,
-        primaryDomain: user.primaryDomain,
-        targetVenue: user.targetVenue,
-        techStack: user.techStack,
-        subscription: user.subscription
-      }
+      message: 'Profile settings updated successfully',
+      user
     });
   } catch (error) {
-    console.error('Update profile error:', error);
+    console.error('Settings update error:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 });
