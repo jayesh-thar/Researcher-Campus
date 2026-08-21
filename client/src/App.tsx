@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { ArrowRight, BookOpen, ShieldCheck, Cpu, Layers } from 'lucide-react';
+import { Dashboard } from './pages/Dashboard';
 
 function Home() {
   return (
@@ -110,6 +111,7 @@ export function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </BrowserRouter>
   );
