@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Search, Sparkles, BookOpen, Layers, CheckSquare, 
-  FileText, ShieldCheck, Award, Settings, User, Command
-} from 'lucide-react';
+import { Search, Sparkles, LayoutDashboard, Settings } from 'lucide-react';
 
 export interface CommandPaletteProps {
   isOpen: boolean;
@@ -19,9 +16,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         if (isOpen) onClose();
-        else {
-          // Open handled by parent or toggle
-        }
       }
       if (e.key === 'Escape' && isOpen) {
         onClose();
@@ -34,14 +28,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
   if (!isOpen) return null;
 
   const actions = [
-    { icon: Sparkles, title: 'Stage 1: Idea Lab Reformulator', path: '/project/new' },
-    { icon: BookOpen, title: 'Stage 2: Literature Gate Report', path: '/project/demo/report' },
-    { icon: Layers, title: 'Stage 3: Research Whitespace Board', path: '/project/demo/literature' },
-    { icon: CheckSquare, title: 'Stage 4: Implementation Roadmap', path: '/project/demo/roadmap' },
-    { icon: FileText, title: 'Stage 5: Paper Drafting Studio', path: '/project/demo/editor' },
-    { icon: ShieldCheck, title: 'Stage 6: AI Pre-Flight Auditor', path: '/project/demo/audit' },
-    { icon: Award, title: 'Stage 7: Target Venue Matcher', path: '/project/demo/venues' },
-    { icon: Settings, title: 'Account Settings & Profile', path: '/profile' }
+    { icon: Sparkles, title: 'Start New Project (Stage 1: Idea Lab)', path: '/project/new' },
+    { icon: LayoutDashboard, title: 'Open Research Dashboard', path: '/dashboard' },
+    { icon: Settings, title: 'Account Profile & Settings', path: '/profile' }
   ];
 
   const filtered = actions.filter((a) => a.title.toLowerCase().includes(query.toLowerCase()));
@@ -59,7 +48,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
           <input
             type="text"
             autoFocus
-            placeholder="Type a command or jump to stage (e.g. Stage 5, Paper Studio)..."
+            placeholder="Search commands or start new project..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="w-full text-sm text-slate-800 focus:outline-none placeholder-slate-400 bg-transparent font-sans"
@@ -85,7 +74,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                     <Icon className="w-4 h-4 text-navy-800 shrink-0" />
                     <span>{item.title}</span>
                   </div>
-                  <span className="font-mono text-[10px] text-slate-400">Jump ↵</span>
+                  <span className="font-mono text-[10px] text-slate-400">Select ↵</span>
                 </button>
               );
             })

@@ -12,6 +12,7 @@ import { Login } from './pages/Login';
 import { Onboarding } from './pages/Onboarding';
 import { ProfileSettings } from './pages/ProfileSettings';
 import { LandingPage } from './pages/LandingPage';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 export function App() {
   return (
@@ -19,16 +20,88 @@ export function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/onboarding" element={<Onboarding />} />
-        <Route path="/profile" element={<ProfileSettings />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/project/new" element={<IdeaLab />} />
-        <Route path="/project/:id/report" element={<GateReport />} />
-        <Route path="/project/:id/literature" element={<WhitespaceBoard />} />
-        <Route path="/project/:id/roadmap" element={<Roadmap />} />
-        <Route path="/project/:id/editor" element={<PaperStudio />} />
-        <Route path="/project/:id/audit" element={<PreFlightAudit />} />
-        <Route path="/project/:id/venues" element={<VenueMatcher />} />
+        
+        {/* Protected Routes — Require Authentication */}
+        <Route
+          path="/onboarding"
+          element={
+            <ProtectedRoute>
+              <Onboarding />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfileSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/project/new"
+          element={
+            <ProtectedRoute>
+              <IdeaLab />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/project/:id/report"
+          element={
+            <ProtectedRoute>
+              <GateReport />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/project/:id/literature"
+          element={
+            <ProtectedRoute>
+              <WhitespaceBoard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/project/:id/roadmap"
+          element={
+            <ProtectedRoute>
+              <Roadmap />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/project/:id/editor"
+          element={
+            <ProtectedRoute>
+              <PaperStudio />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/project/:id/audit"
+          element={
+            <ProtectedRoute>
+              <PreFlightAudit />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/project/:id/venues"
+          element={
+            <ProtectedRoute>
+              <VenueMatcher />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

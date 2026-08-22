@@ -1,18 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Cpu, Plus, User as UserIcon, LogOut, Search, Github, Star } from 'lucide-react';
+import { Plus, User as UserIcon, LogOut, Search, Github, Star } from 'lucide-react';
 import { Button } from '../ui/Button';
-import { Badge } from '../ui/Badge';
 import { CommandPalette } from '../ui/CommandPalette';
 
 export interface NavbarProps {
   user?: {
     name: string;
     email: string;
-    subscription: {
-      usedThisMonth: number;
-      monthlyQuota: number;
-    };
   } | null;
   onLogout?: () => void;
 }
@@ -20,9 +15,6 @@ export interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
   const [isCommandOpen, setIsCommandOpen] = useState<boolean>(false);
   const [starCount, setStarCount] = useState<number | null>(128);
-  const used = user?.subscription?.usedThisMonth ?? 42;
-  const quota = user?.subscription?.monthlyQuota ?? 100;
-  const percentage = Math.min(100, Math.round((used / quota) * 100));
 
   useEffect(() => {
     fetch('https://api.github.com/repos/jayesh-thar/Researcher-Campus')
@@ -58,7 +50,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
             href="https://github.com/jayesh-thar/Researcher-Campus"
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden lg:flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200/80 border border-slate-300 text-slate-700 px-2.5 py-1.5 rounded text-xs transition-colors font-medium"
+            className="hidden sm:flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200/80 border border-slate-300 text-slate-700 px-2.5 py-1.5 rounded text-xs transition-colors font-medium"
             title="View Source on GitHub"
           >
             <Github className="w-3.5 h-3.5" />
@@ -82,20 +74,6 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
             </kbd>
           </button>
 
-          {/* Usage Quota Meter */}
-          <div className="hidden sm:flex items-center space-x-3 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded">
-            <Cpu className="w-4 h-4 text-navy-800 shrink-0" />
-            <div className="flex flex-col space-y-0.5">
-              <div className="flex items-center justify-between text-[11px] font-mono text-slate-700 space-x-2">
-                <span>Quota:</span>
-                <span className="font-semibold">{used} / {quota} reqs</span>
-              </div>
-              <div className="w-24 bg-slate-200 h-1.5 rounded-full overflow-hidden">
-                <div className="bg-navy-800 h-full transition-all" style={{ width: `${percentage}%` }} />
-              </div>
-            </div>
-          </div>
-
           {/* Action Buttons */}
           <Link to="/project/new">
             <Button size="sm" leftIcon={<Plus className="w-3.5 h-3.5" />}>
@@ -108,7 +86,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
             <div className="flex items-center space-x-2 pl-2 border-l border-slate-200">
               <Link to="/profile" title="Account Settings">
                 <div className="w-8 h-8 bg-navy-800 text-white rounded flex items-center justify-center font-semibold text-xs border border-navy-900 hover:bg-navy-700 transition-colors">
-                  {user.name.charAt(0).toUpperCase()}
+                  {user.name ? user.name.charAt(0).toUpperCase() : 'R'}
                 </div>
               </Link>
               <button

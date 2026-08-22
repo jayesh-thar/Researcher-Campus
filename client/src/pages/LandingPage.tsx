@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  ArrowRight, BookOpen, ShieldCheck, Cpu, Layers, Github, Star, 
-  Sparkles, CheckCircle2, Award, Zap, Compass, ExternalLink, FileText, CheckSquare
+  ArrowRight, BookOpen, ShieldCheck, Layers, Github, Star, 
+  Sparkles, ExternalLink, FileText, CheckSquare, CheckCircle2
 } from 'lucide-react';
 import gsap from 'gsap';
 import { Navbar } from '../components/layout/Navbar';
@@ -63,79 +63,56 @@ export function LandingPage() {
       num: 1,
       title: 'Stage 1: Idea Lab Reformulator',
       desc: 'Transforms raw informal research ideas into publication-grade proposals using Gemini AI.',
-      badge: 'Dual Intake Mode',
+      badge: 'Start Here',
       link: '/project/new'
     },
     {
       num: 2,
-      title: 'Stage 2: 5-Engine Literature Gate Scan',
-      desc: 'Harvests 5 global databases (Crossref, arXiv, Semantic Scholar, OpenAlex, Europe PMC) with 384d vector cosine similarity decision gate.',
-      badge: 'Gate Verdict System',
-      link: '/project/demo/report'
+      title: 'Stage 2: 5-Engine Literature Scan',
+      desc: 'Harvests 5 global databases (Crossref, arXiv, Semantic Scholar, OpenAlex, Europe PMC) with vector similarity decision gate.',
+      badge: 'Novelty Gate',
+      link: '/project/new'
     },
     {
       num: 3,
       title: 'Stage 3: Research Whitespace Board',
       desc: 'Categorizes literature into Baselines, Competitors, and References with 1-click BibTeX import & export.',
-      badge: 'BibTeX Citation Engine',
-      link: '/project/demo/literature'
+      badge: 'Gap Matrix',
+      link: '/project/new'
     },
     {
       num: 4,
       title: 'Stage 4: Implementation Roadmap',
       desc: 'Scouts Kaggle & HuggingFace datasets with a 4-phase milestone checklist and live readiness meter.',
-      badge: 'Resource Scout',
-      link: '/project/demo/roadmap'
+      badge: 'Checklist',
+      link: '/project/new'
     },
     {
       num: 5,
       title: 'Stage 5: Paper Drafting Studio',
       desc: 'Split-screen Markdown editor with live IEEE/ACM 2-column preview, KaTeX math blocks, and Google Drive auto-sync.',
-      badge: 'Live Split Preview & Drive Sync',
-      link: '/project/demo/editor'
+      badge: 'Drafting Canvas',
+      link: '/project/new'
     },
     {
       num: 6,
       title: 'Stage 6: AI Pre-Flight Auditor',
-      desc: 'Automated compliance checks verifying citation integrity, double-blind review anonymity, page limits, and academic tone with 1-click AI auto-fix.',
-      badge: '4 Pre-Flight Guards',
-      link: '/project/demo/audit'
+      desc: 'Automated compliance checks verifying citation integrity, double-blind review anonymity, page limits, and academic tone.',
+      badge: 'Compliance Guards',
+      link: '/project/new'
     },
     {
       num: 7,
       title: 'Stage 7: Target Venue Matcher',
-      desc: 'Curated CS/AI conference database with CORE Ranks (A*), acceptance rates, deadline countdowns, and 1-click submission zip package export.',
-      badge: 'Submission Package Exporter',
-      link: '/project/demo/venues'
+      desc: 'Curated CS/AI conference directory with CORE Ranks (A*), acceptance rates, deadline countdowns, and 1-click submission package export.',
+      badge: 'Venue Directory',
+      link: '/project/new'
     }
   ];
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 font-sans selection:bg-navy-800 selection:text-white">
       <Navbar />
-
-      {/* GitHub Repository Top Banner */}
-      <div className="w-full bg-navy-900 text-white text-xs py-2 px-6 flex items-center justify-between border-b border-navy-800">
-        <div className="flex items-center space-x-2 truncate">
-          <Badge variant="info" size="sm">OPEN SOURCE</Badge>
-          <span className="font-mono text-slate-300 truncate">
-            jayesh-thar / Researcher-Campus — All-in-one autonomous AI academic operating system
-          </span>
-        </div>
-        <a
-          href="https://github.com/jayesh-thar/Researcher-Campus"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center space-x-1.5 bg-white/10 hover:bg-white/20 px-3 py-1 rounded text-white font-medium transition-colors shrink-0"
-        >
-          <Github className="w-3.5 h-3.5" />
-          <span>Star on GitHub</span>
-          <div className="flex items-center space-x-0.5 text-amber-400 font-mono font-bold ml-1">
-            <Star className="w-3 h-3 fill-amber-400" />
-            <span>{starCount !== null ? starCount : 128}</span>
-          </div>
-        </a>
-      </div>
 
       {/* HERO SECTION WITH GSAP ANIMATIONS */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-6 py-12 flex flex-col justify-center space-y-16">
@@ -157,15 +134,15 @@ export function LandingPage() {
           </p>
 
           <div ref={ctaRef} className="flex flex-wrap items-center gap-4 pt-2">
-            <Link to="/onboarding">
+            <Link to="/project/new">
               <Button size="lg" rightIcon={<ArrowRight className="w-4 h-4" />}>
-                Initialize Workspace
+                Start New Project (Stage 1)
               </Button>
             </Link>
 
             <Link to="/dashboard">
               <Button variant="secondary" size="lg">
-                Explore Dashboard
+                View Workspace Dashboard
               </Button>
             </Link>
 
@@ -177,21 +154,24 @@ export function LandingPage() {
             >
               <Github className="w-4 h-4 text-slate-700" />
               <span>GitHub Repository</span>
-              <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+              <div className="flex items-center space-x-0.5 text-amber-600 font-mono font-bold text-xs ml-1">
+                <Star className="w-3 h-3 fill-amber-400 text-amber-500" />
+                <span>{starCount !== null ? starCount : 128}</span>
+              </div>
             </a>
           </div>
         </div>
 
-        {/* METRICS & IMPACT COUNTER SECTION */}
+        {/* SIMPLIFIED METRICS SECTION */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-slate-200">
           {[
-            { value: '5', label: 'Harvester Engines', desc: 'Crossref, arXiv, Semantic Scholar, OpenAlex, Europe PMC' },
-            { value: '384d', label: 'Vector Cosine Similarity', desc: 'High-dimensional embedding overlap decision gate' },
-            { value: '4', label: 'Pre-Flight Audit Guards', desc: 'Citation integrity, anonymity, formatting & academic tone' },
-            { value: '7', label: 'Sequential Lifecycles', desc: 'From raw idea intake to final conference zip export' }
+            { value: '5 Databases', label: 'Concurrently Scanned', desc: 'Crossref, arXiv, Semantic Scholar, OpenAlex & Europe PMC' },
+            { value: '100% Automated', label: 'Novelty Gate', desc: 'Instant vector similarity overlap decision verdict' },
+            { value: '4 Guards', label: 'Pre-Flight Audit', desc: 'Citation integrity, anonymity, rules & academic tone' },
+            { value: '7 Stages', label: 'Sequential Lifecycle', desc: 'From raw proposal to conference submission zip' }
           ].map((metric, idx) => (
             <div key={idx} className="bg-white border border-slate-200 p-4 rounded text-left space-y-1">
-              <div className="text-2xl sm:text-3xl font-extrabold font-mono text-navy-800">{metric.value}</div>
+              <div className="text-xl sm:text-2xl font-extrabold font-mono text-navy-800">{metric.value}</div>
               <div className="text-xs font-bold text-slate-900">{metric.label}</div>
               <div className="text-[11px] text-slate-500 leading-tight">{metric.desc}</div>
             </div>
@@ -201,12 +181,12 @@ export function LandingPage() {
         {/* INTERACTIVE 7-STAGE WORKFLOW SHOWCASE */}
         <div className="space-y-6 pt-4 border-t border-slate-200">
           <div className="text-center space-y-2 max-w-xl mx-auto">
-            <Badge variant="info" size="md">THE 7 SEQUENTIAL LIFECYCLES</Badge>
+            <Badge variant="info" size="md">SEQUENTIAL 7-STAGE WORKFLOW</Badge>
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-              An End-to-End Workstation Designed for Computer Science & AI Research
+              An End-to-End Workstation for Computer Science & AI Research
             </h2>
             <p className="text-xs text-slate-600">
-              Click any stage below to preview its specialized workstation interface.
+              Explore the sequential stages of Researcher Campus. All projects begin at Stage 1.
             </p>
           </div>
 
@@ -245,9 +225,9 @@ export function LandingPage() {
                 <p className="text-xs text-slate-600 leading-relaxed text-sm">{current.desc}</p>
 
                 <div className="flex justify-end pt-2">
-                  <Link to={current.link}>
+                  <Link to="/project/new">
                     <Button size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
-                      Launch {current.title.split(':')[0]} Workstation
+                      Start New Project (Stage 1)
                     </Button>
                   </Link>
                 </div>
@@ -274,7 +254,7 @@ export function LandingPage() {
             </div>
             <h3 className="font-bold text-slate-900 text-base">Stage 2: 5-Engine Gate Scan</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Concurrent literature scan across Crossref, arXiv, Semantic Scholar, OpenAlex, and Europe PMC with 384d Cosine Similarity Gate Verdict.
+              Concurrent literature scan across Crossref, arXiv, Semantic Scholar, OpenAlex, and Europe PMC with vector similarity Gate Verdict.
             </p>
           </Card>
 
@@ -339,12 +319,8 @@ export function LandingPage() {
             <span className="font-bold text-slate-900 uppercase tracking-wider block">7-Stage Lifecycles</span>
             <ul className="space-y-1.5 text-slate-500 font-medium">
               <li><Link to="/project/new" className="hover:text-navy-800">Stage 1: Idea Lab</Link></li>
-              <li><Link to="/project/demo/report" className="hover:text-navy-800">Stage 2: Gate Report</Link></li>
-              <li><Link to="/project/demo/literature" className="hover:text-navy-800">Stage 3: Whitespace Board</Link></li>
-              <li><Link to="/project/demo/roadmap" className="hover:text-navy-800">Stage 4: Implementation Roadmap</Link></li>
-              <li><Link to="/project/demo/editor" className="hover:text-navy-800">Stage 5: Paper Studio</Link></li>
-              <li><Link to="/project/demo/audit" className="hover:text-navy-800">Stage 6: Pre-Flight Audit</Link></li>
-              <li><Link to="/project/demo/venues" className="hover:text-navy-800">Stage 7: Target Venue Matcher</Link></li>
+              <li><Link to="/dashboard" className="hover:text-navy-800">Research Workspace Dashboard</Link></li>
+              <li><Link to="/profile" className="hover:text-navy-800">Profile & Settings</Link></li>
             </ul>
           </div>
 
@@ -375,7 +351,7 @@ export function LandingPage() {
             <div className="bg-slate-50 border border-slate-200 p-3 rounded space-y-1 font-mono text-[11px]">
               <div className="flex items-center space-x-1.5 text-emerald-700 font-bold">
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>All 7 Stages Operational</span>
+                <span>All Systems Operational</span>
               </div>
               <div className="text-slate-500">• 7-Day Dual-Token JWT Auth</div>
               <div className="text-slate-500">• AES-256-GCM Encrypted Drive Sync</div>

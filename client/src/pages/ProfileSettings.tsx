@@ -101,7 +101,7 @@ export function ProfileSettings() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
-      <Navbar user={{ name, email, subscription: { usedThisMonth: 42, monthlyQuota: 100 } }} onLogout={handleLogout} />
+      <Navbar user={{ name, email }} onLogout={handleLogout} />
 
       <main className="flex-1 max-w-4xl w-full mx-auto px-6 py-8 flex flex-col space-y-6">
         {/* Profile Overview Card */}
