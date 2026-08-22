@@ -155,6 +155,7 @@ export function Login() {
                 placeholder="Dr. John Doe"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                autoComplete="name"
                 required
               />
             )}
@@ -165,6 +166,7 @@ export function Login() {
               placeholder="john@university.edu"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
               required
             />
 
@@ -174,6 +176,7 @@ export function Login() {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete={tab === 'LOGIN' ? 'current-password' : 'new-password'}
               required
             />
 

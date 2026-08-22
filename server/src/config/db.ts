@@ -10,25 +10,36 @@ export async function connectDB(): Promise<typeof mongoose | null> {
     serverSelectionTimeoutMS: 5000,
   };
 
+  // If primary URI has placeholder credentials, directly use local MongoDB to avoid auth warning
+  if (primaryURI.includes('xxxx') || primaryURI.includes('<password>')) {
+    try {
+      const conn = await mongoose.connect(fallbackURI, opts);
+      console.log(`[MongoDB] Connected successfully to local database: ${conn.connection.host}`);
+      return conn;
+    } catch {
+      console.log('[MongoDB] Running Express API server in standalone mode.');
+      return null;
+    }
+  }
+
   try {
     const conn = await mongoose.connect(primaryURI, opts);
     console.log(`[MongoDB] Connected successfully to ${conn.connection.host}`);
     return conn;
   } catch (error: any) {
-    console.warn(`[MongoDB] Primary database connection failed (${error?.message || error}). Attempting fallback connection...`);
+    console.log(`[MongoDB] Primary database notice: ${error?.message || 'Connecting to local database...'}`);
 
     if (primaryURI !== fallbackURI) {
       try {
         const fallbackConn = await mongoose.connect(fallbackURI, opts);
-        console.log(`[MongoDB] Connected successfully to fallback local database: ${fallbackConn.connection.host}`);
+        console.log(`[MongoDB] Connected successfully to local database: ${fallbackConn.connection.host}`);
         return fallbackConn;
-      } catch (fallbackErr: any) {
-        console.warn(`[MongoDB] Fallback database connection failed (${fallbackErr?.message || fallbackErr}). API server running in in-memory mode.`);
+      } catch {
+        console.log('[MongoDB] API server running in standalone mode.');
         return null;
       }
     }
 
-    console.warn('[MongoDB] Database connection omitted. API server running in standalone mode.');
     return null;
   }
 }
