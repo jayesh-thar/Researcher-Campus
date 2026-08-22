@@ -5,6 +5,18 @@ import { requireAuth, AuthenticatedRequest } from '../middlewares/authMiddleware
 
 const router = Router();
 
+// GET /api/projects - List all projects for authenticated user
+router.get('/projects', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user?.userId;
+    const projects = await Project.find({ userId }).sort({ updatedAt: -1 });
+    return res.json({ projects });
+  } catch (error) {
+    console.error('Fetch projects error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 // POST /api/literature/scan
 router.post('/scan', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
