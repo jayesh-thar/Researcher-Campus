@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Plus, User as UserIcon, LogOut, Search, Github, Star } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { CommandPalette } from '../ui/CommandPalette';
+import { api, getAccessToken, setAccessToken } from '../../services/api';
 
 export interface NavbarProps {
   user?: {
@@ -12,11 +13,40 @@ export interface NavbarProps {
   onLogout?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
+export const Navbar: React.FC<NavbarProps> = ({ user: propUser, onLogout: propOnLogout }) => {
+  const navigate = useNavigate();
   const [isCommandOpen, setIsCommandOpen] = useState<boolean>(false);
   const [starCount, setStarCount] = useState<number | null>(128);
+  const [currentUser, setCurrentUser] = useState<{ name: string; email: string } | null>(null);
 
   useEffect(() => {
+    // 1. Resolve user state from props or localStorage or token
+    if (propUser) {
+      setCurrentUser(propUser);
+    } else {
+      const storedUser = localStorage.getItem('user');
+      const token = getAccessToken();
+      if (storedUser) {
+        try {
+          setCurrentUser(JSON.parse(storedUser));
+        } catch {
+          setCurrentUser(null);
+        }
+      } else if (token) {
+        // Fetch user profile from API
+        api.get('/user/profile')
+          .then((res) => {
+            if (res.data.user) {
+              const u = { name: res.data.user.name, email: res.data.user.email };
+              setCurrentUser(u);
+              localStorage.setItem('user', JSON.stringify(u));
+            }
+          })
+          .catch(() => {});
+      }
+    }
+
+    // 2. Fetch live GitHub stars count
     fetch('https://api.github.com/repos/jayesh-thar/Researcher-Campus')
       .then((res) => res.json())
       .then((data) => {
@@ -25,11 +55,25 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
         }
       })
       .catch(() => {});
-  }, []);
+  }, [propUser]);
+
+  const handleLogout = async () => {
+    if (propOnLogout) {
+      propOnLogout();
+      return;
+    }
+    try {
+      await api.post('/auth/logout');
+    } catch {}
+    setAccessToken(null);
+    localStorage.removeItem('user');
+    setCurrentUser(null);
+    navigate('/login');
+  };
 
   return (
     <>
-      <header className="w-full bg-white border-b border-slate-200 px-6 py-2.5 flex items-center justify-between sticky top-0 z-30 shadow-xs">
+      <header className="w-full bg-white border-b border-slate-200 px-6 py-2.5 flex items-center justify-between sticky top-0 z-30 shadow-xs font-sans">
         <div className="flex items-center space-x-4">
           <Link to="/" className="flex items-center space-x-2.5">
             <div className="w-8 h-8 bg-navy-800 text-white flex items-center justify-center font-bold text-sm rounded">
@@ -82,15 +126,15 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
           </Link>
 
           {/* User Profile */}
-          {user ? (
+          {currentUser ? (
             <div className="flex items-center space-x-2 pl-2 border-l border-slate-200">
-              <Link to="/profile" title="Account Settings">
-                <div className="w-8 h-8 bg-navy-800 text-white rounded flex items-center justify-center font-semibold text-xs border border-navy-900 hover:bg-navy-700 transition-colors">
-                  {user.name ? user.name.charAt(0).toUpperCase() : 'R'}
+              <Link to="/profile" title={`Signed in as ${currentUser.name}`}>
+                <div className="w-8 h-8 bg-navy-800 text-white rounded flex items-center justify-center font-semibold text-xs border border-navy-900 hover:bg-navy-700 transition-colors shadow-2xs">
+                  {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'R'}
                 </div>
               </Link>
               <button
-                onClick={onLogout}
+                onClick={handleLogout}
                 className="text-slate-500 hover:text-red-700 p-1.5 rounded hover:bg-slate-100 transition-colors"
                 title="Sign Out"
               >

@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ShieldCheck, ArrowRight, Lock, Mail, User as UserIcon, Sparkles } from 'lucide-react';
 import { Navbar } from '../components/layout/Navbar';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { api } from '../services/api';
+import { api, setAccessToken } from '../services/api';
 
 export function Login() {
   const navigate = useNavigate();
@@ -16,6 +16,45 @@ export function Login() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Handle Google OAuth callback token hash in URL
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash && hash.includes('access_token=')) {
+      const params = new URLSearchParams(hash.replace('#', '?'));
+      const googleToken = params.get('access_token');
+      if (googleToken) {
+        setLoading(true);
+        fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${googleToken}` }
+        })
+          .then((res) => res.json())
+          .then(async (googleUser) => {
+            const response = await api.post('/auth/google', {
+              googleId: googleUser.sub,
+              name: googleUser.name || 'Google Researcher',
+              email: googleUser.email,
+              avatarUrl: googleUser.picture
+            });
+            const { accessToken, user } = response.data;
+            setAccessToken(accessToken);
+            if (user) {
+              localStorage.setItem('user', JSON.stringify(user));
+            }
+            window.history.replaceState(null, '', window.location.pathname);
+            if (!user?.isCompletedOnboarding) {
+              navigate('/onboarding');
+            } else {
+              navigate('/dashboard');
+            }
+          })
+          .catch((err) => {
+            console.error('Google Userinfo error:', err);
+          })
+          .finally(() => setLoading(false));
+      }
+    }
+  }, [navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -24,26 +63,28 @@ export function Login() {
     try {
       if (tab === 'LOGIN') {
         const response = await api.post('/auth/login', { email, password });
-        localStorage.setItem('accessToken', response.data.accessToken);
-        if (!response.data.user?.isCompletedOnboarding) {
+        const { accessToken, user } = response.data;
+        setAccessToken(accessToken);
+        if (user) {
+          localStorage.setItem('user', JSON.stringify(user));
+        }
+        if (!user?.isCompletedOnboarding) {
           navigate('/onboarding');
         } else {
           navigate('/dashboard');
         }
       } else {
         const response = await api.post('/auth/register', { name, email, password });
-        localStorage.setItem('accessToken', response.data.accessToken);
+        const { accessToken, user } = response.data;
+        setAccessToken(accessToken);
+        if (user) {
+          localStorage.setItem('user', JSON.stringify(user));
+        }
         navigate('/onboarding');
       }
     } catch (err: any) {
       console.error('Auth error:', err);
-      // Demo fallback login if server is offline
-      localStorage.setItem('accessToken', 'demo_jwt_access_token_2026');
-      if (tab === 'REGISTER') {
-        navigate('/onboarding');
-      } else {
-        navigate('/dashboard');
-      }
+      setError(err.response?.data?.error || 'Authentication failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -51,26 +92,13 @@ export function Login() {
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
-    try {
-      const response = await api.post('/auth/google', {
-        googleId: `google-user-${Date.now()}`,
-        name: name || 'Academic Researcher',
-        email: email || `researcher-${Date.now()}@university.edu`,
-        avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200'
-      });
-      localStorage.setItem('accessToken', response.data.accessToken);
-      if (!response.data.user?.isCompletedOnboarding) {
-        navigate('/onboarding');
-      } else {
-        navigate('/dashboard');
-      }
-    } catch (err) {
-      console.error('Google Auth demo error:', err);
-      localStorage.setItem('accessToken', 'demo_google_jwt_access_token');
-      navigate('/onboarding');
-    } finally {
-      setLoading(false);
-    }
+    const googleClientId = '286990208369-m4649d061kk5ra97n316mh5vkr0rf8br.apps.googleusercontent.com';
+    const redirectUri = encodeURIComponent(window.location.origin);
+    const scope = encodeURIComponent('email profile');
+
+    // Trigger Google Account selection OAuth popup/redirect
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}&prompt=select_account`;
+    window.location.href = googleAuthUrl;
   };
 
   return (

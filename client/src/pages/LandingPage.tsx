@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   ArrowRight, BookOpen, ShieldCheck, Layers, Github, Star, 
   Sparkles, ExternalLink, FileText, CheckSquare, CheckCircle2
@@ -9,6 +9,7 @@ import { Navbar } from '../components/layout/Navbar';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
+import { api } from '../services/api';
 
 export function LandingPage() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -20,7 +21,40 @@ export function LandingPage() {
   const [activeStageTab, setActiveStageTab] = useState<number>(1);
   const [starCount, setStarCount] = useState<number | null>(128);
 
+  const navigate = useNavigate();
+
   useEffect(() => {
+    // Check for Google OAuth callback hash
+    const hash = window.location.hash;
+    if (hash && hash.includes('access_token=')) {
+      const params = new URLSearchParams(hash.replace('#', '?'));
+      const googleToken = params.get('access_token');
+      if (googleToken) {
+        fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${googleToken}` }
+        })
+          .then((res) => res.json())
+          .then(async (googleUser) => {
+            const response = await api.post('/auth/google', {
+              googleId: googleUser.sub,
+              name: googleUser.name || 'Google Researcher',
+              email: googleUser.email,
+              avatarUrl: googleUser.picture
+            });
+            localStorage.setItem('accessToken', response.data.accessToken);
+            window.history.replaceState(null, '', window.location.pathname);
+            if (!response.data.user?.isCompletedOnboarding) {
+              navigate('/onboarding');
+            } else {
+              navigate('/dashboard');
+            }
+          })
+          .catch((err) => {
+            console.error('Google Auth callback error:', err);
+          });
+      }
+    }
+
     // GSAP Entrance Animations
     const ctx = gsap.context(() => {
       gsap.fromTo(
@@ -56,7 +90,7 @@ export function LandingPage() {
       .catch(() => {});
 
     return () => ctx.revert();
-  }, []);
+  }, [navigate]);
 
   const stages = [
     {

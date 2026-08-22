@@ -23,12 +23,15 @@ export function Onboarding() {
     setLoading(true);
     setConnectDrive(shouldConnectDrive);
     try {
-      await api.put('/user/onboarding', {
+      const response = await api.put('/user/onboarding', {
         persona,
         primaryDomain,
         targetVenuePreference: venuePreference,
         connectDrive: shouldConnectDrive
       });
+      if (response.data.user) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+      }
       navigate('/dashboard');
     } catch (err) {
       console.error('Onboarding submit error:', err);

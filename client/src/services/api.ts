@@ -10,19 +10,55 @@ export const api = axios.create({
   },
 });
 
-let accessToken: string | null = null;
+let inMemoryToken: string | null = null;
 
 export function setAccessToken(token: string | null) {
-  accessToken = token;
+  inMemoryToken = token;
+  if (token) {
+    localStorage.setItem('accessToken', token);
+  } else {
+    localStorage.removeItem('accessToken');
+  }
 }
 
 export function getAccessToken(): string | null {
-  return accessToken;
+  return inMemoryToken || localStorage.getItem('accessToken');
 }
 
+// Request Interceptor: Always attach Bearer token from inMemoryToken or localStorage
 api.interceptors.request.use((config) => {
-  if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`;
+  const token = getAccessToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
+
+// Response Interceptor: Handle 401 and attempt automatic token refresh
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        const refreshResponse = await axios.post(
+          `${API_BASE_URL}/auth/refresh`,
+          {},
+          { withCredentials: true }
+        );
+        const newToken = refreshResponse.data.accessToken;
+        if (newToken) {
+          setAccessToken(newToken);
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return api(originalRequest);
+        }
+      } catch (refreshError) {
+        console.warn('Session expired. Redirecting to login...');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('user');
+      }
+    }
+    return Promise.reject(error);
+  }
+);
