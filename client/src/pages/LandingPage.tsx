@@ -24,6 +24,19 @@ export function LandingPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Auto-redirect returning logged in users directly to workspace dashboard
+    const token = localStorage.getItem('accessToken');
+    const storedUserStr = localStorage.getItem('user');
+    if (token && storedUserStr) {
+      try {
+        const u = JSON.parse(storedUserStr);
+        if (u.isCompletedOnboarding) {
+          navigate('/dashboard', { replace: true });
+          return;
+        }
+      } catch {}
+    }
+
     // Check for Google OAuth callback hash
     const hash = window.location.hash;
     if (hash && hash.includes('access_token=')) {

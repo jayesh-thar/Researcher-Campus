@@ -15,6 +15,15 @@ export interface GateScanResult {
   };
 }
 
+// 5 Literature Harvester API Base Endpoints (Configurable via Environment Variables)
+const HARVESTER_ENDPOINTS = {
+  CROSSREF: process.env.CROSSREF_API_URL || 'https://api.crossref.org/works',
+  ARXIV: process.env.ARXIV_API_URL || 'http://export.arxiv.org/api/query',
+  SEMANTIC_SCHOLAR: process.env.SEMANTIC_SCHOLAR_API_URL || 'https://api.semanticscholar.org/graph/v1/paper/search',
+  OPENALEX: process.env.OPENALEX_API_URL || 'https://api.openalex.org/works',
+  EUROPE_PMC: process.env.EUROPE_PMC_API_URL || 'https://www.ebi.ac.uk/europepmc/webservices/rest/search'
+};
+
 // Simple text cosine vector similarity simulation (384d embedding distance approximation)
 function calculateSimulatedCosineSimilarity(textA: string, textB: string): number {
   const wordsA = new Set(textA.toLowerCase().split(/\W+/).filter((w) => w.length > 3));
@@ -35,6 +44,8 @@ export async function executeMultiEngineLiteratureScan(
   problemStatement: string,
   methodologyOverview: string
 ): Promise<GateScanResult> {
+  console.log(`[Harvester] Triggering 5-Engine Literature Scan across:`, HARVESTER_ENDPOINTS);
+
   // Query 5 Academic Sources concurrently (Crossref, arXiv, Semantic Scholar, OpenAlex, Europe PMC)
   const candidatePapers: Array<{
     title: string;

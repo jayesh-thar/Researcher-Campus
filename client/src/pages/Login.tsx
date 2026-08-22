@@ -18,6 +18,19 @@ export function Login() {
 
   // Handle Google OAuth callback token hash in URL
   useEffect(() => {
+    // Auto-redirect returning logged in users directly to workspace dashboard
+    const token = localStorage.getItem('accessToken');
+    const storedUserStr = localStorage.getItem('user');
+    if (token && storedUserStr && !window.location.hash.includes('access_token=')) {
+      try {
+        const u = JSON.parse(storedUserStr);
+        if (u.isCompletedOnboarding) {
+          navigate('/dashboard', { replace: true });
+          return;
+        }
+      } catch {}
+    }
+
     const hash = window.location.hash;
     if (hash && hash.includes('access_token=')) {
       const params = new URLSearchParams(hash.replace('#', '?'));
@@ -93,10 +106,12 @@ export function Login() {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     const googleClientId = '286990208369-m4649d061kk5ra97n316mh5vkr0rf8br.apps.googleusercontent.com';
-    const redirectUri = encodeURIComponent(window.location.origin);
+    // Ensure clean origin without trailing slashes matching exact console URI
+    const origin = window.location.origin.replace(/\/$/, '');
+    const redirectUri = encodeURIComponent(`${origin}/login`);
     const scope = encodeURIComponent('email profile');
 
-    // Trigger Google Account selection OAuth popup/redirect
+    // Trigger Google Account selection OAuth redirect
     const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}&prompt=select_account`;
     window.location.href = googleAuthUrl;
   };
