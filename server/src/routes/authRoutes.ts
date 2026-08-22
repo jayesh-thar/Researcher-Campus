@@ -1,8 +1,8 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import { User } from '../models/User.js';
-import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/jwt.js';
-import { requireAuth, AuthenticatedRequest } from '../middlewares/authMiddleware.js';
+import { User } from '../models/User';
+import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/jwt';
+import { requireAuth, AuthenticatedRequest } from '../middlewares/authMiddleware';
 
 const router = Router();
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;

@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
-import { reformulateIdea } from '../services/geminiService.js';
-import { requireAuth, AuthenticatedRequest } from '../middlewares/authMiddleware.js';
+import { reformulateIdea } from '../services/geminiService';
+import { requireAuth, AuthenticatedRequest } from '../middlewares/authMiddleware';
 
 const router = Router();
 

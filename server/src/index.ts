@@ -1,14 +1,14 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { connectDB } from './config/db.js';
-import authRoutes from './routes/authRoutes.js';
-import aiRoutes from './routes/aiRoutes.js';
-import literatureRoutes from './routes/literatureRoutes.js';
-import roadmapRoutes from './routes/roadmapRoutes.js';
-import driveRoutes from './routes/driveRoutes.js';
-import auditRoutes from './routes/auditRoutes.js';
-import venueRoutes from './routes/venueRoutes.js';
+import { connectDB } from './config/db';
+import authRoutes from './routes/authRoutes';
+import aiRoutes from './routes/aiRoutes';
+import literatureRoutes from './routes/literatureRoutes';
+import roadmapRoutes from './routes/roadmapRoutes';
+import driveRoutes from './routes/driveRoutes';
+import auditRoutes from './routes/auditRoutes';
+import venueRoutes from './routes/venueRoutes';
 
 dotenv.config();
 
@@ -23,33 +23,26 @@ app.use(cors({
 }));
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// Health check endpoint
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'OK', system: 'Researcher Campus Express API Server', timestamp: new Date() });
-});
-
-// Mounting Routers
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/user', authRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/literature', literatureRoutes);
-app.use('/api/project', literatureRoutes);
-app.use('/api/roadmap', roadmapRoutes);
-app.use('/api/project', roadmapRoutes);
-app.use('/api/drive', driveRoutes);
-app.use('/api/audit', auditRoutes);
-app.use('/api/project', auditRoutes);
+app.use('/api', literatureRoutes);
+app.use('/api', roadmapRoutes);
+app.use('/api', driveRoutes);
+app.use('/api', auditRoutes);
 app.use('/api', venueRoutes);
-app.use('/api/project', venueRoutes);
 
-// Bootstrap Server
-async function startServer() {
-  await connectDB();
+// Health check endpoint
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok', message: 'Researcher Campus Express API operational' });
+});
+
+// Start Server
+connectDB().then(() => {
   app.listen(PORT, () => {
-    console.log(`[Express API Server] Running on http://localhost:${PORT}`);
+    console.log(`⚡ Researcher Campus Express Server running on port ${PORT}`);
   });
-}
-
-startServer();
+});

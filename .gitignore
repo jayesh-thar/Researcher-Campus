@@ -8,6 +8,9 @@ out/
 
 # Local Environment Variables & Secrets
 .env
+*.env
+server/.env
+client/.env
 .env.local
 .env.development.local
 .env.test.local
@@ -34,3 +37,4 @@ reports/
 understanding/
 EXTRA/
 plan.md
+bugs_and_improvements/

@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
-import { executeMultiEngineLiteratureScan } from '../services/literatureService.js';
-import { Project, ILiteratureItem } from '../models/Project.js';
-import { requireAuth, AuthenticatedRequest } from '../middlewares/authMiddleware.js';
+import { executeMultiEngineLiteratureScan } from '../services/literatureService';
+import { Project, ILiteratureItem } from '../models/Project';
+import { requireAuth, AuthenticatedRequest } from '../middlewares/authMiddleware';
 
 const router = Router();
 
