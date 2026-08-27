@@ -1,11 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const apiKey = process.env.GEMINI_API_KEY || '';
-// Initialize if valid key provided
-const genAI = apiKey && !apiKey.includes('xxxx') && apiKey !== 'your_gemini_api_key_here' && apiKey.startsWith('AIzaSy')
-  ? new GoogleGenerativeAI(apiKey) 
-  : null;
-
 export interface ReformulateResult {
   academicTitle: string;
   problemStatement: string;
@@ -68,19 +62,61 @@ export interface DynamicVenueResult {
   }>;
 }
 
+// DYNAMIC RUNTIME GEMINI CLIENT ACQUISITION
+function getGenAIClient(): GoogleGenerativeAI | null {
+  const key = process.env.GEMINI_API_KEY?.trim() || '';
+  if (!key || key.includes('xxxx') || key === 'your_gemini_api_key_here' || key.length < 10) {
+    return null;
+  }
+  return new GoogleGenerativeAI(key);
+}
+
+// CASCADING MULTI-MODEL FALLBACK CHAIN (1.5-flash -> 2.0-flash -> 1.5-pro)
+async function generateWithModelFallback(prompt: string): Promise<string | null> {
+  const client = getGenAIClient();
+  if (!client) return null;
+
+  const candidateModels = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
+  for (const modelName of candidateModels) {
+    try {
+      const model = client.getGenerativeModel({ model: modelName });
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+      if (text && text.trim().length > 0) {
+        return text;
+      }
+    } catch (err: any) {
+      console.warn(`[Gemini AI] Model ${modelName} notice: ${err?.message || err}`);
+    }
+  }
+  return null;
+}
+
+function parseJsonSafely<T>(text: string): T | null {
+  try {
+    const cleaned = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+    const match = cleaned.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+    if (match) {
+      return JSON.parse(match[0]) as T;
+    }
+    return JSON.parse(cleaned) as T;
+  } catch (e) {
+    return null;
+  }
+}
+
 // 1. REFORMULATE PROPOSAL
 export async function reformulateIdea(
   rawInput: string,
   userProfile?: { persona?: string; primaryDomain?: string; targetVenue?: string }
 ): Promise<ReformulateResult> {
-  if (genAI) {
-    try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      const prompt = `
-You are an expert principal academic research advisor.
+  const prompt = `
+You are an expert principal academic research advisor and senior reviewer for top IEEE, ACM, and Nature journals.
 Analyze the researcher's input and transform it into a publication-grade scientific proposal.
-Infer the exact scientific domain (e.g. Healthcare & Medical ML, Distributed Systems, NLP, Computer Vision, Cybersecurity).
-Generate domain-appropriate evaluation metrics (e.g. for disease classification/ML: AUC-ROC, Sensitivity, Precision, F1-Score; for Systems: Latency, Throughput; for NLP: BLEU, Perplexity).
+Whether the user provides a brief 1-sentence thought (student level) or a specialized technical abstract (senior researcher level), formulate a rigorous, empirically sound academic specification.
+
+Infer the exact scientific domain (e.g. Healthcare & Clinical ML, Distributed Systems, NLP & LLMs, Computer Vision, Cybersecurity, Quantum Computing).
+Generate domain-appropriate evaluation metrics (e.g. for disease classification/ML: AUC-ROC, Sensitivity, Precision, F1-Score; for Systems: Latency (ms), Throughput (req/s), Memory (MB); for NLP: BLEU-4, Perplexity, ROUGE-L).
 
 Researcher Input:
 "${rawInput}"
@@ -91,19 +127,17 @@ Respond strictly in valid JSON matching this structure:
   "problemStatement": "Rigorous 2-3 sentence scientific problem statement detailing domain challenges, class imbalance, latency, or theoretical gaps",
   "methodologyOverview": "Detailed 3-4 sentence methodological formulation detailing algorithms, feature engineering, architectures, or baselines",
   "targetMetrics": ["Metric 1 (e.g. AUC-ROC %)", "Metric 2 (e.g. Sensitivity %)", "Metric 3 (e.g. Precision %)"],
-  "healthScore": 92,
+  "healthScore": 94,
   "clarityNotes": "Appraisal of proposal strengths, novelty factors, and scope boundaries",
   "inferredDomain": "Exact Scientific Domain"
 }
 `;
-      const result = await model.generateContent(prompt);
-      const textResponse = result.response.text();
-      const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]) as ReformulateResult;
-      }
-    } catch (error) {
-      console.warn('Gemini API reformulation warning, using dynamic domain heuristic fallback:', error);
+
+  const aiText = await generateWithModelFallback(prompt);
+  if (aiText) {
+    const parsed = parseJsonSafely<ReformulateResult>(aiText);
+    if (parsed && parsed.academicTitle) {
+      return parsed;
     }
   }
 
@@ -115,10 +149,7 @@ export async function generateDynamicLiterature(
   academicTitle: string,
   methodologyOverview: string
 ): Promise<DynamicLiteraturePaper[]> {
-  if (genAI) {
-    try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      const prompt = `
+  const prompt = `
 You are an academic literature synthesis specialist.
 Based on the following research proposal, generate 3 published peer-reviewed papers (IEEE, ACM, Springer, Nature, Elsevier):
 1. A Foundational BASELINE paper in this exact field.
@@ -162,14 +193,12 @@ Respond strictly in valid JSON array format:
   }
 ]
 `;
-      const result = await model.generateContent(prompt);
-      const textResponse = result.response.text();
-      const jsonMatch = textResponse.match(/\[[\s\S]*\]/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]) as DynamicLiteraturePaper[];
-      }
-    } catch (error) {
-      console.warn('Gemini dynamic literature error, using domain heuristic fallback:', error);
+
+  const aiText = await generateWithModelFallback(prompt);
+  if (aiText) {
+    const parsed = parseJsonSafely<DynamicLiteraturePaper[]>(aiText);
+    if (parsed && Array.isArray(parsed) && parsed.length > 0) {
+      return parsed;
     }
   }
 
@@ -181,10 +210,7 @@ export async function generateResearchGaps(
   academicTitle: string,
   methodologyOverview: string
 ): Promise<ResearchGapItem[]> {
-  if (genAI) {
-    try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      const prompt = `
+  const prompt = `
 Analyze the state-of-the-art literature for this proposal and identify 3 critical scientific gaps:
 Title: "${academicTitle}"
 Methodology: "${methodologyOverview}"
@@ -200,12 +226,12 @@ Return strictly in JSON array format:
   }
 ]
 `;
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
-      const match = text.match(/\[[\s\S]*\]/);
-      if (match) return JSON.parse(match[0]);
-    } catch (e) {
-      console.warn('Gemini research gaps error, using fallback:', e);
+
+  const aiText = await generateWithModelFallback(prompt);
+  if (aiText) {
+    const parsed = parseJsonSafely<ResearchGapItem[]>(aiText);
+    if (parsed && Array.isArray(parsed) && parsed.length > 0) {
+      return parsed;
     }
   }
 
@@ -217,10 +243,7 @@ export async function generateDynamicRoadmap(
   academicTitle: string,
   methodologyOverview: string
 ): Promise<DynamicRoadmapResult> {
-  if (genAI) {
-    try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      const prompt = `
+  const prompt = `
 Generate a tailored 4-phase implementation roadmap for this specific scientific paper:
 Title: "${academicTitle}"
 Methodology: "${methodologyOverview}"
@@ -246,14 +269,12 @@ Respond strictly in valid JSON:
   ]
 }
 `;
-      const result = await model.generateContent(prompt);
-      const textResponse = result.response.text();
-      const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]) as DynamicRoadmapResult;
-      }
-    } catch (error) {
-      console.warn('Gemini dynamic roadmap error, using domain heuristic fallback:', error);
+
+  const aiText = await generateWithModelFallback(prompt);
+  if (aiText) {
+    const parsed = parseJsonSafely<DynamicRoadmapResult>(aiText);
+    if (parsed && parsed.datasets && parsed.milestones) {
+      return parsed;
     }
   }
 
@@ -265,10 +286,7 @@ export async function generateDynamicVenues(
   academicTitle: string,
   methodologyOverview: string
 ): Promise<DynamicVenueResult> {
-  if (genAI) {
-    try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      const prompt = `
+  const prompt = `
 Recommend 4 premier academic publication venues (Conferences and Journals) strictly tailored to this paper topic:
 Title: "${academicTitle}"
 Methodology: "${methodologyOverview}"
@@ -293,14 +311,12 @@ Respond strictly in valid JSON:
   ]
 }
 `;
-      const result = await model.generateContent(prompt);
-      const textResponse = result.response.text();
-      const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]) as DynamicVenueResult;
-      }
-    } catch (error) {
-      console.warn('Gemini dynamic venues error, using domain heuristic fallback:', error);
+
+  const aiText = await generateWithModelFallback(prompt);
+  if (aiText) {
+    const parsed = parseJsonSafely<DynamicVenueResult>(aiText);
+    if (parsed && parsed.venues && parsed.venues.length > 0) {
+      return parsed;
     }
   }
 
@@ -318,10 +334,7 @@ export async function chatWithAiAssistant(
     existingTasks?: string[];
   }
 ): Promise<{ reply: string; suggestedTasks?: string[]; suggestedText?: string }> {
-  if (genAI) {
-    try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      const prompt = `
+  const prompt = `
 You are Researcher Campus AI Co-Pilot, an intelligent academic co-advisor.
 Project Title: "${context.projectTitle}"
 Methodology Context: "${context.methodology}"
@@ -342,14 +355,12 @@ Respond strictly in valid JSON:
   "suggestedText": "" // Only populate if user requested paper drafting
 }
 `;
-      const result = await model.generateContent(prompt);
-      const textResponse = result.response.text();
-      const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
-      }
-    } catch (error) {
-      console.warn('Gemini chat error, using conversation heuristic:', error);
+
+  const aiText = await generateWithModelFallback(prompt);
+  if (aiText) {
+    const parsed = parseJsonSafely<{ reply: string; suggestedTasks?: string[]; suggestedText?: string }>(aiText);
+    if (parsed && parsed.reply) {
+      return parsed;
     }
   }
 
@@ -373,10 +384,7 @@ export async function auditPaperWithHumanization(
   strengths: string[];
   improvements: string[];
 }> {
-  if (genAI) {
-    try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      const prompt = `
+  const prompt = `
 Perform a rigorous academic pre-flight audit of this paper manuscript:
 Title: "${academicTitle}"
 Content:
@@ -403,14 +411,19 @@ Respond strictly in valid JSON:
   "improvements": ["Consider adding ablation study discussion on interaction terms"]
 }
 `;
-      const result = await model.generateContent(prompt);
-      const textResponse = result.response.text();
-      const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
-      }
-    } catch (error) {
-      console.warn('Gemini audit error:', error);
+
+  const aiText = await generateWithModelFallback(prompt);
+  if (aiText) {
+    const parsed = parseJsonSafely<{
+      overallScore: number;
+      humanizationScore: number;
+      noveltyScore: number;
+      guards: Array<{ name: string; status: 'PASS' | 'WARNING' | 'FAIL'; message: string; autoFixAvailable: boolean }>;
+      strengths: string[];
+      improvements: string[];
+    }>(aiText);
+    if (parsed && typeof parsed.overallScore === 'number') {
+      return parsed;
     }
   }
 
@@ -608,7 +621,7 @@ function generateFallbackResearchGaps(academicTitle: string): ResearchGapItem[] 
       },
       {
         id: 'gap-3',
-        gapTitle: 'Black-Box Oopacity in Tabular Ensemble Clinical Decisions',
+        gapTitle: 'Black-Box Opacity in Tabular Ensemble Clinical Decisions',
         currentLimitation: 'Complex gradient boosting ensembles lack clinician-interpretable attributions required for hospital diagnostic adoption.',
         proposedInnovation: 'Incorporate TreeSHAP game-theoretic feature attribution to provide individualized patient risk explanations.',
         impactScore: 92
