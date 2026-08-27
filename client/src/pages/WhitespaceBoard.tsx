@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   BookOpen, ExternalLink, Download, FileText, CheckCircle2, 
-  ArrowRight, Filter, Search, Award, Compass, RefreshCw
+  ArrowRight, Filter, Search, Award, Compass, RefreshCw, Eye, X, Copy, Check
 } from 'lucide-react';
 import { Navbar } from '../components/layout/Navbar';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
-import { Skeleton } from '../components/ui/Skeleton';
 import { BibtexImportModal } from '../components/ui/BibtexImportModal';
 import { api } from '../services/api';
 
@@ -33,6 +32,8 @@ export function WhitespaceBoard() {
   const [whitespaceText, setWhitespaceText] = useState<string>('');
   const [literatureItems, setLiteratureItems] = useState<LiteratureItem[]>([]);
   const [projectTitle, setProjectTitle] = useState<string>('');
+  const [selectedPaper, setSelectedPaper] = useState<LiteratureItem | null>(null);
+  const [copiedBibtex, setCopiedBibtex] = useState<boolean>(false);
 
   const fetchWhitespaceData = async () => {
     setLoading(true);
@@ -43,7 +44,7 @@ export function WhitespaceBoard() {
         setProjectTitle(project.academicTitle || project.title || 'Research Proposal');
         setWhitespaceText(
           project.gateResult?.whitespaceStatement ||
-          'Existing published literature focuses on standard linear methods without evaluating non-linear interaction terms or minority-class resampling.'
+          'Novel methodological formulation with empirical differentiation from published baselines.'
         );
         if (project.literature && project.literature.length > 0) {
           setLiteratureItems(project.literature);
@@ -79,7 +80,6 @@ export function WhitespaceBoard() {
   };
 
   const handleSaveImportedBibtex = (bibtexText: string) => {
-    // Basic bibtex entry parser
     const titleMatch = bibtexText.match(/title\s*=\s*[{"]([^}"]+)[}"]/i);
     const authorMatch = bibtexText.match(/author\s*=\s*[{"]([^}"]+)[}"]/i);
     const yearMatch = bibtexText.match(/year\s*=\s*[{"]?(\d{4})[}"]?/i);
@@ -99,6 +99,12 @@ export function WhitespaceBoard() {
     };
 
     setLiteratureItems((prev) => [...prev, newItem]);
+  };
+
+  const handleCopyBibtex = (bibtex: string) => {
+    navigator.clipboard.writeText(bibtex);
+    setCopiedBibtex(true);
+    setTimeout(() => setCopiedBibtex(false), 2500);
   };
 
   const filteredItems = literatureItems.filter((item) => {
@@ -185,16 +191,28 @@ export function WhitespaceBoard() {
           </Button>
         </div>
 
-        {/* Literature Cards Grid */}
+        {/* Loading YouTube-Style Skeleton Shimmer */}
         {loading ? (
           <div className="space-y-4">
-            <Skeleton className="h-40 w-full" />
-            <Skeleton className="h-40 w-full" />
+            <div className="h-6 w-56 bg-slate-200 rounded animate-pulse" />
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-white border border-slate-200 rounded p-5 space-y-3 animate-pulse">
+                <div className="flex justify-between items-center">
+                  <div className="h-4 w-72 bg-slate-200 rounded" />
+                  <div className="h-4 w-20 bg-slate-200 rounded" />
+                </div>
+                <div className="h-12 bg-slate-100 rounded" />
+              </div>
+            ))}
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
             {filteredItems.map((paper) => (
-              <Card key={paper.id} className="bg-white border-slate-200 space-y-3">
+              <Card
+                key={paper.id}
+                className="bg-white border-slate-200 hover:border-navy-800 transition-all cursor-pointer space-y-3"
+                onClick={() => setSelectedPaper(paper)}
+              >
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                   <div className="space-y-1">
                     <div className="flex items-center space-x-2">
@@ -203,7 +221,7 @@ export function WhitespaceBoard() {
                       </Badge>
                       <span className="font-mono text-xs text-slate-500 font-semibold">{paper.venue} ({paper.year})</span>
                     </div>
-                    <h3 className="font-bold text-slate-900 text-sm">{paper.title}</h3>
+                    <h3 className="font-bold text-slate-900 text-sm hover:text-navy-800">{paper.title}</h3>
                     <p className="text-xs text-slate-500 font-mono">Authors: {paper.authors.join(', ')}</p>
                   </div>
 
@@ -220,20 +238,93 @@ export function WhitespaceBoard() {
                 </div>
 
                 <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-xs font-mono">
+                  <span className="text-navy-800 font-semibold flex items-center">
+                    <Eye className="w-3.5 h-3.5 mr-1" /> View Full Abstract & BibTeX
+                  </span>
                   {paper.doiUrl && (
                     <a
                       href={paper.doiUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-navy-800 hover:underline flex items-center"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-slate-500 hover:text-navy-800 hover:underline flex items-center"
                     >
                       Publisher DOI <ExternalLink className="w-3 h-3 ml-1" />
                     </a>
                   )}
-                  <span className="text-slate-400">Cited in Proposal</span>
                 </div>
               </Card>
             ))}
+          </div>
+        )}
+
+        {/* Paper Detail Modal */}
+        {selectedPaper && (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-6 animate-fadeIn">
+            <div className="bg-white border border-slate-300 rounded shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <div className="flex items-center space-x-2">
+                  <Badge variant={selectedPaper.category === 'BASELINE' ? 'stop' : selectedPaper.category === 'COMPETITOR' ? 'warning' : 'info'}>
+                    {selectedPaper.category}
+                  </Badge>
+                  <span className="font-mono text-xs font-bold text-slate-700">{selectedPaper.venue} ({selectedPaper.year})</span>
+                </div>
+                <button
+                  onClick={() => setSelectedPaper(null)}
+                  className="text-slate-400 hover:text-slate-700 p-1"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-6 overflow-y-auto space-y-4 text-xs">
+                <h2 className="text-base font-bold text-slate-900">{selectedPaper.title}</h2>
+                <p className="font-mono text-slate-600">Authors: {selectedPaper.authors.join(', ')}</p>
+
+                <div className="space-y-1 bg-slate-50 border border-slate-200 p-3 rounded">
+                  <span className="font-bold text-slate-700 uppercase tracking-wider block font-mono text-[10px]">
+                    Methodology Distinction / Gap:
+                  </span>
+                  <p className="text-slate-800 leading-relaxed font-sans">{selectedPaper.keyTakeaway}</p>
+                  <div className="pt-2 font-mono text-navy-800 font-bold">
+                    Vector Overlap: {selectedPaper.similarity}%
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-slate-700 uppercase tracking-wider block font-mono text-[10px]">
+                      BibTeX Reference:
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleCopyBibtex(selectedPaper.bibtex)}
+                      className="text-navy-800 hover:text-navy-900 font-mono text-[11px] flex items-center space-x-1"
+                    >
+                      {copiedBibtex ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copiedBibtex ? 'Copied!' : 'Copy BibTeX'}</span>
+                    </button>
+                  </div>
+                  <pre className="p-3 bg-slate-900 text-slate-100 rounded text-[11px] font-mono overflow-x-auto">
+                    {selectedPaper.bibtex}
+                  </pre>
+                </div>
+              </div>
+
+              <div className="px-6 py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+                {selectedPaper.doiUrl && (
+                  <a
+                    href={selectedPaper.doiUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-navy-800 font-mono hover:underline flex items-center"
+                  >
+                    Open Publisher DOI <ExternalLink className="w-3 h-3 ml-1" />
+                  </a>
+                )}
+                <Button size="sm" onClick={() => setSelectedPaper(null)}>Close</Button>
+              </div>
+            </div>
           </div>
         )}
 

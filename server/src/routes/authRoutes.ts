@@ -119,7 +119,7 @@ router.post('/google', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Google authentication data missing' });
     }
 
-    let user = await User.findOne({ $or: [{ googleId }, { email }] });
+    let user = await User.findOne({ email });
 
     if (!user) {
       user = await User.create({
@@ -129,9 +129,9 @@ router.post('/google', async (req: Request, res: Response) => {
         avatarUrl,
         isCompletedOnboarding: false
       });
-    } else if (!user.googleId) {
-      user.googleId = googleId || `google-${Date.now()}`;
-      if (avatarUrl) user.avatarUrl = avatarUrl;
+    } else {
+      if (googleId && !user.googleId) user.googleId = googleId;
+      if (avatarUrl && !user.avatarUrl) user.avatarUrl = avatarUrl;
       await user.save();
     }
 
