@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Dashboard } from './pages/Dashboard';
 import { IdeaLab } from './pages/IdeaLab';
 import { GateReport } from './pages/GateReport';
@@ -63,6 +63,14 @@ export function App() {
           }
         />
         <Route
+          path="/project/:id/whitespace"
+          element={
+            <ProtectedRoute>
+              <WhitespaceBoard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/project/:id/literature"
           element={
             <ProtectedRoute>
@@ -102,6 +110,9 @@ export function App() {
             </ProtectedRoute>
           }
         />
+
+        {/* Fallback route for unmatched URLs */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
   );
