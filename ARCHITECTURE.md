@@ -6,13 +6,14 @@ This document details the software architecture, data flow sequences, security m
 
 ## 📐 1. System Topology & Monorepo Architecture
 
-Researcher Campus is engineered on a **Classic MERN Stack Monorepo Architecture** (`client/` React 18 + Vite + TypeScript & `server/` Node.js + Express.js + Mongoose MongoDB), ensuring zero framework lock-in and high scalability.
+Researcher Campus is engineered on a **Classic MERN Stack Monorepo Architecture** (`client/` React 18 + Vite + TypeScript & `server/` Node.js + Express.js + Mongoose MongoDB), ensuring high performance, rapid iteration, and zero vendor lock-in.
 
 ```mermaid
 graph TD
     subgraph Client ["Client Layer (React 18 + Vite + TypeScript)"]
         UI["Minimalist UI Design System<br/>(#FAFAFA Canvas, Max 4px Radius)"]
         Router["React Router DOM (7 Stages)"]
+        SideDrawer["Persistent Side-by-Side<br/>Paper Drafting Studio Drawer"]
         Axios["Axios API Client<br/>(Bearer Token Interceptor)"]
     end
 
@@ -20,22 +21,23 @@ graph TD
         Express["Express App Bootstrap (Port 5000)"]
         AuthMw["JWT Auth Middleware Guard"]
         AuthRoutes["/api/auth & /api/user"]
-        AIRoutes["/api/ai (Gemini Reformulator)"]
-        LitRoutes["/api/literature & /api/project"]
-        RoadmapRoutes["/api/roadmap"]
-        DriveRoutes["/api/drive (Cloud Sync)"]
-        AuditRoutes["/api/audit (Pre-Flight Auditor)"]
-        VenueRoutes["/api/venues"]
+        AIRoutes["/api/ai (Gemini Reformulator & Auditor)"]
+        LitRoutes["/api/literature & /api/project (Gate & Gaps)"]
+        RoadmapRoutes["/api/roadmap (AI Co-Pilot & Tasks)"]
+        DriveRoutes["/api/drive (Cloud Sync & Report Generator)"]
+        VenueRoutes["/api/venues (Matcher & .zip Vault)"]
     end
 
     subgraph DB ["Persistence & External Services Layer"]
         MongoDB[("Mongoose MongoDB Database<br/>(User & Project Schemas)")]
-        Gemini["Google Gemini Pro AI API"]
+        Gemini["Google Gemini Pro AI API<br/>(1.5-flash / 2.0-flash / 1.5-pro Cascade)"]
         Apis["5 Academic Literature Engines<br/>(Crossref, arXiv, Semantic Scholar, OpenAlex, Europe PMC)"]
     end
 
     UI --> Router
+    Router --> SideDrawer
     Router --> Axios
+    SideDrawer --> Axios
     Axios --> Express
     Express --> AuthMw
     AuthMw --> AuthRoutes
@@ -43,7 +45,6 @@ graph TD
     AuthMw --> LitRoutes
     AuthMw --> RoadmapRoutes
     AuthMw --> DriveRoutes
-    AuthMw --> AuditRoutes
     AuthMw --> VenueRoutes
 
     AuthRoutes --> MongoDB
@@ -52,7 +53,6 @@ graph TD
     LitRoutes --> MongoDB
     RoadmapRoutes --> MongoDB
     DriveRoutes --> MongoDB
-    AuditRoutes --> MongoDB
     VenueRoutes --> MongoDB
 ```
 
@@ -60,32 +60,11 @@ graph TD
 
 ## 🔐 2. Security & Dual-Token Authentication Flow
 
-Authentication utilizes a **Dual-Token JWT Architecture** paired with `bcrypt` password hashing and `httpOnly` cookie protection:
-- **Access Token (15 Minutes)**: In-memory short-lived token sent via `Authorization: Bearer <token>` HTTP header.
-- **Refresh Token (7 Days)**: Stored in an `httpOnly`, `SameSite=Strict`, `Secure` browser cookie to eliminate XSS token theft risks.
+Authentication utilizes a **Dual-Token JWT Architecture** paired with `bcrypt` password hashing and secure token lookups:
+- **Access Token (15 Minutes)**: Short-lived token sent via `Authorization: Bearer <token>` HTTP header.
+- **Refresh Token (7 Days)**: Stored securely in client storage and verified for automatic session continuation.
+- **Google OAuth Integration**: Direct user lookup by email prevents duplicate index collisions on existing accounts.
 - **Google Drive Credentials**: Encrypted at rest using AES-256-GCM authenticated encryption (`crypto.ts`).
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Researcher
-    participant Client as React Client (Port 3000)
-    participant Server as Express Server (Port 5000)
-    participant DB as MongoDB Database
-
-    Researcher->>Client: Enter Email & Password
-    Client->>Server: POST /api/auth/login { email, password }
-    Server->>DB: Query User by Email
-    DB-->>Server: User Document (bcrypt Hash)
-    Server->>Server: Verify bcrypt.compare(password, hash)
-    Server->>Server: Sign 15m Access Token & 7d Refresh Token
-    Server-->>Client: Set httpOnly Refresh Cookie + Return Access Token JSON
-    Client->>Client: Save Access Token in State & Axios Headers
-    Researcher->>Client: Access Protected Dashboard / Project Studio
-    Client->>Server: GET /api/user/profile (Bearer Access Token)
-    Server->>Server: Verify JWT Signature in authMiddleware
-    Server-->>Client: 200 OK User Profile Data
-```
 
 ---
 
@@ -96,7 +75,7 @@ When a researcher initiates Stage 2 Literature Verification, the server executes
 ```mermaid
 flowchart TD
     Start["User Triggers Stage 2 Literature Scan"] --> Express["Express POST /api/literature/scan"]
-    Express --> ParallelScan["Execute Concurrent API Harvester"]
+    Express --> ParallelScan["Execute Concurrent 5-Engine Harvester"]
     
     ParallelScan --> Crossref["🌐 Crossref API (Journal DOIs)"]
     ParallelScan --> ArXiv["🌐 arXiv API (2024-2026 Preprints)"]
@@ -112,24 +91,24 @@ flowchart TD
     Thresholds -- "30% - 50% Overlap" --> Warning["🟡 SOFT WARNING (AI Differentiator Triggers)"]
     Thresholds -- "> 50% Overlap" --> Stop["🔴 HARD STOP (Instant Concept Pivot Angles)"]
 
-    Pass & Warning & Stop --> Save["Persist Gate Verdict & Literature Matrix to MongoDB"]
+    Pass & Warning & Stop --> Save["Atomic findByIdAndUpdate to MongoDB"]
     Save --> Response["Return Gate Report JSON to React Client"]
 ```
 
 ---
 
-## 📑 4. Document Drafting & Google Drive Auto-Sync Pipeline
+## 📑 4. Document Drafting & Side-by-Side Studio Pipeline
 
-In Stage 5 (Paper Studio), manuscript state is updated in real time with automatic cloud synchronization:
+Manuscript state is accessible across stages through `<SidePaperDrawer />` and Stage 5 Paper Studio with background auto-sync and Google Drive report export:
 
 ```mermaid
 flowchart LR
-    Editor["React Markdown Editor Canvas"] --> State["In-Memory Draft State"]
-    State --> Preview["Live Academic Preview (IEEE / ACM / Nature Render)"]
-    State --> Debounce["Debounced Auto-Save Trigger (30s)"]
+    Editor["Split-Screen Markdown / LaTeX Canvas"] --> State["In-Memory Draft State"]
+    State --> Preview["Live Academic Preview (IEEE 2-Column Render)"]
+    State --> Debounce["Debounced Save Trigger"]
     Debounce --> API["PUT /api/project/:id/document"]
     API --> Mongo["Persist Document State in MongoDB"]
-    API --> Drive["POST /api/project/:id/drive/sync"]
-    Drive --> DriveCloud["Google Drive REST API Storage"]
+    API --> Drive["POST /api/project/:id/drive/sync-report"]
+    Drive --> DriveCloud["Google Drive Certified Document (.doc / .md)"]
     DriveCloud --> Status["UI Status Badge: 🟢 Synced to Drive"]
 ```
