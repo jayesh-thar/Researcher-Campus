@@ -10,8 +10,11 @@
 
 | Resource Document | Link | Description |
 | :--- | :--- | :--- |
-| 🎬 **Live Demo & Walkthrough Guide** | [`DEMO.md`](https://github.com/jayesh-thar/Researcher-Campus/blob/main/DEMO.md) | Step-by-step instructions for initializing local servers and running a live demo |
+| 📊 **Final Master Engineering Report (v1.0.0.0)** | [`reports/FINAL_ENGINEERING_REPORT_v1.0.0.0.md`](https://github.com/jayesh-thar/Researcher-Campus/blob/main/reports/FINAL_ENGINEERING_REPORT_v1.0.0.0.md) | Complete engineering timeline, root cause logs, and technical resolution history |
+| 🎬 **Live Demo & Walkthrough Guide** | [`DEMO.md`](https://github.com/jayesh-thar/Researcher-Campus/blob/main/DEMO.md) | Step-by-step instructions for initializing local servers and running an end-to-end live demo |
 | 🏗️ **Technical Architecture Document** | [`ARCHITECTURE.md`](https://github.com/jayesh-thar/Researcher-Campus/blob/main/ARCHITECTURE.md) | Deep-dive topology, Mermaid sequence diagrams, security & database schemas |
+| 🔒 **Security & Privacy Policy** | [`SECURITY.md`](https://github.com/jayesh-thar/Researcher-Campus/blob/main/SECURITY.md) | Dual-token authentication, AES-256-GCM encryption, and vulnerability disclosure policy |
+| 🤝 **Contributing Guidelines** | [`CONTRIBUTING.md`](https://github.com/jayesh-thar/Researcher-Campus/blob/main/CONTRIBUTING.md) | Local development guidelines, coding conventions, and PR workflow |
 | 🐛 **Bugs & Improvements Master Log** | [`bugs_and_improvements/BUGS_AND_IMPROVEMENTS_LOG.md`](https://github.com/jayesh-thar/Researcher-Campus/blob/main/bugs_and_improvements/BUGS_AND_IMPROVEMENTS_LOG.md) | Complete engineering changelog and technical resolution logs |
 
 ---

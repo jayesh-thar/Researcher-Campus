@@ -31,10 +31,11 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Developer Tracking & Personal Folders (Excluded from Git as requested)
+# Developer Scratch Directories
 implementation/
 reports/
 understanding/
 EXTRA/
 plan.md
 bugs_and_improvements/
+DEPLOYMENT.md
