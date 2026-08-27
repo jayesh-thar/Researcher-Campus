@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Plus, User as UserIcon, LogOut, Search, Github, Star } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { CommandPalette } from '../ui/CommandPalette';
+import { ServerStatusGuard } from './ServerStatusGuard';
 import { api, getAccessToken, setAccessToken } from '../../services/api';
 
 export interface NavbarProps {
@@ -73,6 +74,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user: propUser, onLogout: propOn
 
   return (
     <>
+      <ServerStatusGuard />
       <header className="w-full bg-white border-b border-slate-200 px-6 py-2.5 flex items-center justify-between sticky top-0 z-30 shadow-xs font-sans">
         <div className="flex items-center space-x-4">
           <Link to="/" className="flex items-center space-x-2.5">
