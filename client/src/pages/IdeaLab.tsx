@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, FileText, CheckCircle2, ArrowRight, Activity, RotateCcw, UploadCloud } from 'lucide-react';
+import { Sparkles, CheckCircle2, ArrowRight, Activity, Plus, X } from 'lucide-react';
 import { Navbar } from '../components/layout/Navbar';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { Badge } from '../components/ui/Badge';
 import { api } from '../services/api';
 
 export function IdeaLab() {
   const navigate = useNavigate();
   const [intakeMode, setIntakeMode] = useState<'RAW' | 'DRAFT'>('RAW');
-  const [rawInput, setRawInput] = useState<string>('');
   const [projectTitle, setProjectTitle] = useState<string>('');
-  const [domain, setDomain] = useState<string>('💻 Software & Distributed Systems');
+  const [rawInput, setRawInput] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,9 +24,11 @@ export function IdeaLab() {
     targetMetrics: string[];
     healthScore: number;
     clarityNotes: string;
+    inferredDomain?: string;
   } | null>(null);
 
-  const [useAI, setUseAI] = useState<boolean>(true);
+  const [customMetrics, setCustomMetrics] = useState<string[]>([]);
+  const [newMetricInput, setNewMetricInput] = useState<string>('');
 
   const handleReformulate = async () => {
     if (!rawInput.trim()) {
@@ -38,50 +40,57 @@ export function IdeaLab() {
     try {
       const response = await api.post('/ai/reformulate', {
         rawInput,
-        userProfile: { primaryDomain: domain }
+        userProfile: { persona: 'Researcher' }
       });
-      setReformulated(response.data.reformulation);
+      const data = response.data.reformulation;
+      setReformulated(data);
+      setCustomMetrics(data.targetMetrics || []);
       if (!projectTitle) {
-        setProjectTitle(rawInput.slice(0, 50));
+        setProjectTitle(data.academicTitle || rawInput.slice(0, 50));
       }
-      setLoading(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Reformulation error:', err);
-      // Fallback local reformulation if server is offline
-      setReformulated({
-        academicTitle: `Constraint-Aware Optimization Framework for ${rawInput.slice(0, 40)}`,
-        problemStatement: `Contemporary implementations in ${domain} exhibit latency bottlenecks under dynamic workloads. Existing tools lack deterministic bounds during peak concurrent usage.`,
-        methodologyOverview: `We propose an autonomous, event-driven algorithm that dynamically evaluates prerequisite dependency graph heuristics and applies localized workload balancing.`,
-        targetMetrics: ['Latency (ms)', 'Throughput (req/sec)', 'Memory Overhead (MB)'],
-        healthScore: 92,
-        clarityNotes: 'Proposal exhibits strong academic clarity and defined evaluation metrics.'
-      });
+      setError('Failed to refine with AI. You can still proceed directly to Stage 2.');
+    } finally {
       setLoading(false);
     }
   };
 
-  const handleCreateProject = async () => {
-    if (!rawInput.trim()) {
-      setError('Please provide a research idea before proceeding.');
+  const handleCreateProject = async (useAiResult: boolean) => {
+    if (!rawInput.trim() && !projectTitle.trim()) {
+      setError('Please provide a project title or research idea before proceeding.');
       return;
     }
     setLoading(true);
     try {
+      const titleToSave = projectTitle.trim() || (reformulated ? reformulated.academicTitle : rawInput.slice(0, 50));
       const response = await api.post('/project/create', {
-        title: projectTitle || rawInput.slice(0, 50),
+        title: titleToSave,
         rawInput,
-        academicTitle: useAI && reformulated ? reformulated.academicTitle : (projectTitle || rawInput),
-        problemStatement: useAI && reformulated ? reformulated.problemStatement : rawInput,
-        methodologyOverview: useAI && reformulated ? reformulated.methodologyOverview : rawInput,
-        domain
+        academicTitle: useAiResult && reformulated ? reformulated.academicTitle : titleToSave,
+        problemStatement: useAiResult && reformulated ? reformulated.problemStatement : rawInput,
+        methodologyOverview: useAiResult && reformulated ? reformulated.methodologyOverview : rawInput,
+        domain: reformulated?.inferredDomain || 'Computer Science & AI'
       });
       const projectId = response.data.project._id;
       navigate(`/project/${projectId}/report`);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Create project error:', err);
-      // Fallback navigate for demo
-      navigate('/dashboard');
+      setError(err.response?.data?.error || 'Failed to initialize project in database.');
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleAddMetric = () => {
+    if (newMetricInput.trim() && !customMetrics.includes(newMetricInput.trim())) {
+      setCustomMetrics([...customMetrics, newMetricInput.trim()]);
+      setNewMetricInput('');
+    }
+  };
+
+  const handleRemoveMetric = (metricToRemove: string) => {
+    setCustomMetrics(customMetrics.filter((m) => m !== metricToRemove));
   };
 
   return (
@@ -98,7 +107,7 @@ export function IdeaLab() {
           </div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Formulate Your Research Proposal</h1>
           <p className="text-xs text-slate-600 mt-1">
-            Enter your raw 1-sentence idea or paste an existing draft. Gemini AI will refine it into a publication-ready academic formulation.
+            Enter your raw research idea or paste an existing draft. Refine into a publication-ready academic proposal or proceed directly to literature scanning.
           </p>
         </div>
 
@@ -112,7 +121,7 @@ export function IdeaLab() {
                 : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
-            Mode A: Raw 1-Sentence Idea
+            Mode A: Raw Idea (1–3 Sentences)
           </button>
           <button
             onClick={() => setIntakeMode('DRAFT')}
@@ -128,127 +137,156 @@ export function IdeaLab() {
 
         {/* Intake Form */}
         <Card className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Project Title / Working Identifier"
-              placeholder="e.g. StudentTasker Optimization"
-              value={projectTitle}
-              onChange={(e) => setProjectTitle(e.target.value)}
-            />
-            <div className="flex flex-col space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                Primary Research Domain
-              </label>
-              <select
-                value={domain}
-                onChange={(e) => setDomain(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-navy-600"
-              >
-                <option>💻 Software & Distributed Systems</option>
-                <option>🧠 Artificial Intelligence & Machine Learning</option>
-                <option>🛡️ Cybersecurity & Privacy</option>
-                <option>🧬 Biomedical & Healthcare Informatics</option>
-                <option>📚 Education & Social Computing</option>
-              </select>
-            </div>
-          </div>
+          <Input
+            label="Project Title / Working Identifier"
+            placeholder="e.g. Clinical Diabetes Prediction with LightGBM & SMOTE-Tomek"
+            value={projectTitle}
+            onChange={(e) => setProjectTitle(e.target.value)}
+          />
 
           <div className="flex flex-col space-y-1.5">
             <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
-              {intakeMode === 'RAW' ? 'Describe Your Idea (1–3 Informal Sentences)' : 'Paste Draft Text or Abstract'}
+              {intakeMode === 'RAW' ? 'Describe Your Idea' : 'Paste Draft Text or Abstract'}
             </label>
             <textarea
-              rows={intakeMode === 'RAW' ? 3 : 6}
-              placeholder={
-                intakeMode === 'RAW'
-                  ? 'e.g., An AI app that schedules college student tasks and notifies them before deadlines based on workload dependencies.'
-                  : 'Paste your raw abstract, introduction draft, or manuscript text here...'
-              }
+              rows={5}
               value={rawInput}
               onChange={(e) => setRawInput(e.target.value)}
-              className="w-full bg-white border border-slate-300 rounded p-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-navy-600"
+              placeholder={
+                intakeMode === 'RAW'
+                  ? 'e.g. I want to build a machine learning model to predict early diabetes in patients using LightGBM and SMOTE-Tomek to fix class imbalance...'
+                  : 'Paste your experimental methodology, abstract, or draft paragraph here...'
+              }
+              className="w-full bg-white border border-slate-300 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-navy-600 placeholder-slate-400 font-sans"
             />
           </div>
 
           {error && <div className="text-xs text-red-600 font-medium">{error}</div>}
 
-          <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-            <span className="text-xs text-slate-500">
-              Powered by Google Gemini Pro API
-            </span>
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100">
             <Button
+              variant="secondary"
+              size="md"
+              onClick={() => handleCreateProject(false)}
+              isLoading={loading}
+              rightIcon={<ArrowRight className="w-4 h-4" />}
+            >
+              Proceed to Stage 2 with My Input
+            </Button>
+
+            <Button
+              size="md"
               onClick={handleReformulate}
               isLoading={loading}
-              leftIcon={<Sparkles className="w-4 h-4 text-amber-300" />}
+              leftIcon={<Sparkles className="w-4 h-4" />}
             >
-              Generate AI Academic Formulation
+              Refine with AI Academic Formulation
             </Button>
           </div>
         </Card>
 
-        {/* AI REFORMULATION RESULT PANEL */}
+        {/* AI REFORMULATION DISPLAY */}
         {reformulated && (
-          <Card className="border-navy-800 bg-slate-50/50 space-y-5 animate-in fade-in duration-300">
+          <Card className="border-navy-800/30 bg-white space-y-5 shadow-xs">
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div className="flex items-center space-x-2">
-                <Sparkles className="w-5 h-5 text-navy-800" />
-                <h3 className="font-bold text-slate-900 text-base">Gemini Academic Re-Formulation</h3>
+                <Sparkles className="w-4 h-4 text-navy-800" />
+                <h3 className="font-bold text-slate-900 text-sm uppercase tracking-wider">
+                  Academic Proposal Formulation
+                </h3>
               </div>
-              <div className="flex items-center space-x-3">
-                {/* Formulation Health Meter */}
-                <div className="flex items-center space-x-2 bg-white border border-slate-200 px-3 py-1 rounded text-xs">
-                  <Activity className="w-3.5 h-3.5 text-emerald-600" />
-                  <span className="text-slate-600">Formulation Health:</span>
-                  <span className="font-bold font-mono text-emerald-700">{reformulated.healthScore}%</span>
+              <div className="flex items-center space-x-2">
+                {reformulated.inferredDomain && (
+                  <Badge variant="info">{reformulated.inferredDomain}</Badge>
+                )}
+                <div className="flex items-center space-x-1 font-mono text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+                  <Activity className="w-3.5 h-3.5" />
+                  <span>Health Score: {reformulated.healthScore}/100</span>
                 </div>
               </div>
             </div>
 
-            {/* Generated Scientific Proposals */}
-            <div className="space-y-4 text-xs">
-              <div className="bg-white p-3.5 border border-slate-200 rounded">
-                <span className="font-bold text-slate-500 uppercase tracking-wider block mb-1">Formal Academic Title</span>
-                <span className="font-semibold text-slate-900 text-sm">{reformulated.academicTitle}</span>
+            <div className="space-y-3 text-xs">
+              <div>
+                <span className="font-bold text-slate-700 uppercase tracking-wider block mb-1">
+                  Academic Title:
+                </span>
+                <input
+                  type="text"
+                  value={reformulated.academicTitle}
+                  onChange={(e) => setReformulated({ ...reformulated, academicTitle: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-300 rounded p-2 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-600"
+                />
               </div>
 
-              <div className="bg-white p-3.5 border border-slate-200 rounded">
-                <span className="font-bold text-slate-500 uppercase tracking-wider block mb-1">Rigorous Problem Statement</span>
-                <p className="text-slate-700 leading-relaxed">{reformulated.problemStatement}</p>
+              <div>
+                <span className="font-bold text-slate-700 uppercase tracking-wider block mb-1">
+                  Scientific Problem Statement:
+                </span>
+                <textarea
+                  rows={3}
+                  value={reformulated.problemStatement}
+                  onChange={(e) => setReformulated({ ...reformulated, problemStatement: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs text-slate-800 leading-relaxed focus:outline-none focus:ring-2 focus:ring-navy-600"
+                />
               </div>
 
-              <div className="bg-white p-3.5 border border-slate-200 rounded">
-                <span className="font-bold text-slate-500 uppercase tracking-wider block mb-1">Proposed Methodological Formulation</span>
-                <p className="text-slate-700 leading-relaxed">{reformulated.methodologyOverview}</p>
+              <div>
+                <span className="font-bold text-slate-700 uppercase tracking-wider block mb-1">
+                  Proposed Methodology Overview:
+                </span>
+                <textarea
+                  rows={3}
+                  value={reformulated.methodologyOverview}
+                  onChange={(e) => setReformulated({ ...reformulated, methodologyOverview: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs text-slate-800 leading-relaxed focus:outline-none focus:ring-2 focus:ring-navy-600"
+                />
               </div>
 
-              <div className="bg-white p-3.5 border border-slate-200 rounded">
-                <span className="font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Target Evaluation Metrics</span>
-                <div className="flex flex-wrap gap-2">
-                  {reformulated.targetMetrics.map((metric, idx) => (
-                    <span key={idx} className="bg-slate-100 text-navy-800 border border-slate-200 px-2.5 py-1 rounded font-mono font-medium">
-                      ✓ {metric}
+              {/* Dynamic Target Evaluation Metrics with Tag Editor */}
+              <div>
+                <span className="font-bold text-slate-700 uppercase tracking-wider block mb-1.5">
+                  Target Evaluation Metrics:
+                </span>
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  {customMetrics.map((metric, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center space-x-1.5 bg-navy-50 text-navy-900 border border-navy-200 px-2.5 py-1 rounded text-xs font-mono font-medium"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5 text-navy-700 shrink-0" />
+                      <span>{metric}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveMetric(metric)}
+                        className="text-navy-400 hover:text-red-600 ml-1"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
                     </span>
                   ))}
                 </div>
+
+                <div className="flex items-center space-x-2 max-w-sm">
+                  <input
+                    type="text"
+                    placeholder="Add custom evaluation metric..."
+                    value={newMetricInput}
+                    onChange={(e) => setNewMetricInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddMetric())}
+                    className="flex-1 bg-white border border-slate-300 rounded px-2.5 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-navy-600"
+                  />
+                  <Button size="sm" variant="secondary" onClick={handleAddMetric} leftIcon={<Plus className="w-3 h-3" />}>
+                    Add
+                  </Button>
+                </div>
               </div>
             </div>
 
-            {/* Toggle Controls: Use AI vs Keep Original */}
-            <div className="flex items-center justify-between pt-3 border-t border-slate-200">
-              <div className="flex items-center space-x-3 text-xs">
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={useAI}
-                    onChange={(e) => setUseAI(e.target.checked)}
-                    className="rounded border-slate-300 text-navy-800 focus:ring-navy-600"
-                  />
-                  <span className="font-medium text-slate-700">Use AI Academic Formulation (Recommended)</span>
-                </label>
-              </div>
-
+            <div className="flex justify-end pt-3 border-t border-slate-200">
               <Button
-                onClick={handleCreateProject}
+                size="md"
+                onClick={() => handleCreateProject(true)}
                 isLoading={loading}
                 rightIcon={<ArrowRight className="w-4 h-4" />}
               >

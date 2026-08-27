@@ -214,4 +214,23 @@ router.get('/project/:id', requireAuth, async (req: AuthenticatedRequest, res: R
   }
 });
 
+// PUT /api/project/:id/title
+router.put('/project/:id/title', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { title, academicTitle } = req.body;
+    const project = await Project.findById(id);
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+    if (title) project.title = title;
+    if (academicTitle) project.academicTitle = academicTitle;
+    await project.save();
+    return res.json({ project });
+  } catch (error) {
+    console.error('Update title error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 export default router;

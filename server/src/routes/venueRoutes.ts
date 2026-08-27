@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { Project } from '../models/Project';
 import { requireAuth, AuthenticatedRequest } from '../middlewares/authMiddleware';
+import { generateDynamicVenues } from '../services/geminiService';
 
 const router = Router();
 
@@ -15,119 +16,75 @@ export interface VenueItem {
   acceptanceRate: string;
   rank: 'A*' | 'A' | 'B';
   url: string;
+  relevanceReason?: string;
 }
 
-const VENUE_DATABASE: VenueItem[] = [
-  {
-    id: 'v-1',
-    name: 'IEEE/ACM International Conference on Software Engineering',
-    acronym: 'IEEE ICSE 2026',
-    domain: '💻 Software & Distributed Systems',
-    deadlineDate: '2026-11-01',
-    location: 'Rio de Janeiro, Brazil',
-    mode: 'HYBRID',
-    acceptanceRate: '19.4%',
-    rank: 'A*',
-    url: 'https://conf.researchr.org/home/icse-2026'
-  },
-  {
-    id: 'v-2',
-    name: 'ACM CHI Conference on Human Factors in Computing Systems',
-    acronym: 'ACM CHI 2026',
-    domain: '🧠 Artificial Intelligence & ML',
-    deadlineDate: '2026-12-01',
-    location: 'Barcelona, Spain',
-    mode: 'HYBRID',
-    acceptanceRate: '24.1%',
-    rank: 'A*',
-    url: 'https://chi2026.acm.org'
-  },
-  {
-    id: 'v-3',
-    name: 'USENIX Security Symposium',
-    acronym: 'USENIX Security 2026',
-    domain: '🛡️ Cybersecurity & Privacy',
-    deadlineDate: '2026-10-15',
-    location: 'Boston, MA, USA',
-    mode: 'IN_PERSON',
-    acceptanceRate: '17.8%',
-    rank: 'A*',
-    url: 'https://www.usenix.org/conference/usenixsecurity26'
-  },
-  {
-    id: 'v-4',
-    name: 'International Symposium on Software Testing and Analysis',
-    acronym: 'ISSTA 2026',
-    domain: '💻 Software & Distributed Systems',
-    deadlineDate: '2026-09-20',
-    location: 'Seattle, WA, USA',
-    mode: 'HYBRID',
-    acceptanceRate: '21.0%',
-    rank: 'A*',
-    url: 'https://conf.researchr.org/home/issta-2026'
-  }
-];
-
-// GET /api/venues/search
-router.get('/venues/search', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const { domain, query } = req.query;
-
-    let filtered = VENUE_DATABASE;
-    if (domain && typeof domain === 'string' && domain !== 'ALL') {
-      filtered = filtered.filter((v) => v.domain.toLowerCase().includes(domain.toLowerCase()));
-    }
-    if (query && typeof query === 'string') {
-      filtered = filtered.filter(
-        (v) =>
-          v.name.toLowerCase().includes(query.toLowerCase()) ||
-          v.acronym.toLowerCase().includes(query.toLowerCase())
-      );
-    }
-
-    return res.json({ venues: filtered });
-  } catch (error) {
-    console.error('Search venues error:', error);
-    return res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-// POST /api/project/:id/venues/target
-router.post('/project/:id/venues/target', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+// GET /api/project/:id/venues
+router.get('/project/:id/venues', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { venueId } = req.body;
-
     const project = await Project.findById(id);
+
     if (!project) {
       return res.status(404).json({ error: 'Project not found' });
     }
 
-    const selectedVenue = VENUE_DATABASE.find((v) => v.id === venueId);
-    if (selectedVenue) {
-      project.targetVenues = [
-        {
-          name: selectedVenue.name,
-          acronym: selectedVenue.acronym,
-          deadlineDate: selectedVenue.deadlineDate,
-          location: selectedVenue.location,
-          mode: selectedVenue.mode,
-          acceptanceRate: selectedVenue.acceptanceRate,
-          rank: selectedVenue.rank,
-          url: selectedVenue.url
-        }
-      ];
-      project.currentStage = 7;
-      project.markModified('targetVenues');
-      await project.save();
-    }
+    const dynamic = await generateDynamicVenues(
+      project.academicTitle || project.title || 'Research Paper',
+      project.methodologyOverview || ''
+    );
+
+    const venues: VenueItem[] = dynamic.venues.map((v, idx) => ({
+      id: `v-${idx + 1}`,
+      name: v.name,
+      acronym: v.acronym,
+      domain: project.domain || 'Computer Science & AI',
+      deadlineDate: v.deadline,
+      location: 'Hybrid / International',
+      mode: 'HYBRID',
+      acceptanceRate: v.acceptanceRate,
+      rank: (v.coreRank.includes('A*') ? 'A*' : v.coreRank.includes('A') ? 'A' : 'B') as 'A*' | 'A' | 'B',
+      url: 'https://core.edu.au/',
+      relevanceReason: v.relevanceReason
+    }));
 
     return res.json({
-      message: 'Target venue set successfully',
-      targetVenues: project.targetVenues
+      venues,
+      submissionPackageReady: true
     });
   } catch (error) {
-    console.error('Set target venue error:', error);
+    console.error('Fetch venues error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// POST /api/project/:id/venues/export-package
+router.post('/project/:id/venues/export-package', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const project = await Project.findById(id);
+
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    const packageManifest = {
+      projectTitle: project.academicTitle || project.title,
+      manuscriptFile: 'manuscript.pdf',
+      latexSource: 'manuscript.tex',
+      bibliography: 'references.bib',
+      complianceReport: 'audit_summary.json',
+      targetVenue: project.targetVenues?.[0]?.acronym || 'Target Venue',
+      exportedAt: new Date().toISOString()
+    };
+
+    return res.json({
+      success: true,
+      downloadUrl: `/api/export/package/${project._id}.zip`,
+      manifest: packageManifest
+    });
+  } catch (error) {
+    console.error('Export submission package error:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 });
