@@ -60,6 +60,28 @@ router.post('/scan', requireAuth, async (req: AuthenticatedRequest, res: Respons
   }
 });
 
+// GET /api/project/:id/gaps - Synthesize research gaps and opportunities
+router.get('/project/:id/gaps', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const project = await Project.findById(id);
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    const { generateResearchGaps } = await import('../services/geminiService');
+    const gaps = await generateResearchGaps(
+      project.academicTitle || project.title,
+      project.methodologyOverview || project.rawInput || ''
+    );
+
+    return res.json({ gaps });
+  } catch (error) {
+    console.error('Fetch gaps error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 // POST /api/project/:id/literature/import
 router.post('/project/:id/literature/import', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {

@@ -2,14 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   CheckSquare, Square, Plus, Sparkles, ExternalLink, ArrowRight, 
-  Database, Code2, Trash2, Send, Bot, User, Activity, Undo2
+  Database, Code2, Trash2, Send, Bot, User, Activity, Undo2, ChevronLeft
 } from 'lucide-react';
 import { Navbar } from '../components/layout/Navbar';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
-import { Skeleton } from '../components/ui/Skeleton';
+import { SidePaperDrawer } from '../components/layout/SidePaperDrawer';
 import { api } from '../services/api';
 
 export interface ChecklistItem {
@@ -43,7 +42,7 @@ export function Roadmap() {
   const [chatMessages, setChatMessages] = useState<Array<{ sender: 'user' | 'ai'; text: string }>>([
     {
       sender: 'ai',
-      text: 'Hello! I am your AI Research Assistant. Ask me to recommend additional ablation tasks, clarify baseline evaluation steps, or assist in organizing your experimental pipeline.'
+      text: 'Hello! I am your AI Research Co-Pilot. Ask me for specialized implementation milestones, ablation experiments, or clarification on your baseline evaluation setup.'
     }
   ]);
   const [chatInput, setChatInput] = useState<string>('');
@@ -143,14 +142,14 @@ export function Roadmap() {
         ...prev,
         {
           sender: 'ai',
-          text: response.data.aiReply || 'I have analyzed your request and added tailored technical tasks to your roadmap checklist.'
+          text: response.data.aiReply || 'I have analyzed your request and provided guidance for your research workflow.'
         }
       ]);
     } catch (err) {
       console.error('Chat error:', err);
       setChatMessages((prev) => [
         ...prev,
-        { sender: 'ai', text: 'I encountered an error connecting to the AI service. Please verify your backend connection.' }
+        { sender: 'ai', text: 'I encountered an issue connecting to the AI co-pilot.' }
       ]);
     } finally {
       setChatLoading(false);
@@ -173,11 +172,19 @@ export function Roadmap() {
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Technical Execution & Milestones</h1>
           </div>
 
-          <Link to={`/project/${id || 'demo'}/editor`}>
-            <Button rightIcon={<ArrowRight className="w-4 h-4" />}>
-              Proceed to Stage 5: Paper Drafting Studio
-            </Button>
-          </Link>
+          <div className="flex items-center space-x-3">
+            <Link to={`/project/${id || 'demo'}/whitespace`}>
+              <Button variant="outline" size="sm" leftIcon={<ChevronLeft className="w-4 h-4" />}>
+                Back to Stage 3
+              </Button>
+            </Link>
+
+            <Link to={`/project/${id || 'demo'}/audit`}>
+              <Button size="sm" rightIcon={<ArrowRight className="w-4 h-4" />}>
+                Proceed to Stage 6: Pre-Flight Audit
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Readiness Meter Card */}
@@ -206,7 +213,10 @@ export function Roadmap() {
           <Card header={<div className="flex items-center space-x-2"><Database className="w-4 h-4 text-navy-800" /><span className="font-bold text-slate-900 text-sm">Recommended Open Datasets</span></div>}>
             <div className="space-y-3 text-xs">
               {datasets.length === 0 ? (
-                <div className="text-slate-400 py-4 text-center">Loading topic-tailored datasets...</div>
+                <div className="space-y-2 animate-pulse">
+                  <div className="h-12 bg-slate-100 rounded" />
+                  <div className="h-12 bg-slate-100 rounded" />
+                </div>
               ) : (
                 datasets.map((d, idx) => (
                   <div key={idx} className="p-3 bg-slate-50 border border-slate-200 rounded flex justify-between items-start">
@@ -228,7 +238,10 @@ export function Roadmap() {
           <Card header={<div className="flex items-center space-x-2"><Code2 className="w-4 h-4 text-navy-800" /><span className="font-bold text-slate-900 text-sm">Recommended Stack & Specialized Libraries</span></div>}>
             <div className="space-y-3 text-xs">
               {tools.length === 0 ? (
-                <div className="text-slate-400 py-4 text-center">Loading recommended tools...</div>
+                <div className="space-y-2 animate-pulse">
+                  <div className="h-12 bg-slate-100 rounded" />
+                  <div className="h-12 bg-slate-100 rounded" />
+                </div>
               ) : (
                 tools.map((t, idx) => (
                   <div key={idx} className="p-3 bg-slate-50 border border-slate-200 rounded flex justify-between items-start">
@@ -352,7 +365,7 @@ export function Roadmap() {
                   ))}
                   {chatLoading && (
                     <div className="bg-slate-100 text-slate-600 p-2.5 rounded-lg mr-6 text-xs font-mono animate-pulse">
-                      Analyzing proposal & synthesizing tasks...
+                      Analyzing proposal & synthesizing advice...
                     </div>
                   )}
                 </div>
@@ -361,7 +374,7 @@ export function Roadmap() {
                 <div className="pt-3 border-t border-slate-200 mt-2 flex items-center space-x-2">
                   <input
                     type="text"
-                    placeholder="Ask AI e.g. Add 2 ablation experiments..."
+                    placeholder="Ask AI e.g. What ablation should I run?..."
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSendChat()}
@@ -375,6 +388,9 @@ export function Roadmap() {
             </Card>
           </div>
         </div>
+
+        {/* Persistent Side-by-Side Paper Drafting Studio Drawer */}
+        <SidePaperDrawer projectId={id || 'demo'} />
       </main>
     </div>
   );

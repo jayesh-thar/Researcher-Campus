@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   Award, Clock, ExternalLink, Download, CheckCircle2, 
-  MapPin, Globe, Sparkles, FolderArchive, ArrowRight, Check
+  MapPin, Globe, Sparkles, FolderArchive, ArrowRight, Check, ChevronLeft
 } from 'lucide-react';
 import { Navbar } from '../components/layout/Navbar';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
-import { Skeleton } from '../components/ui/Skeleton';
+import { SidePaperDrawer } from '../components/layout/SidePaperDrawer';
 import { api } from '../services/api';
 
 export interface VenueItem {
@@ -32,10 +32,16 @@ export function VenueMatcher() {
   const [downloadingZip, setDownloadingZip] = useState<boolean>(false);
   const [venues, setVenues] = useState<VenueItem[]>([]);
   const [downloadSuccess, setDownloadSuccess] = useState<boolean>(false);
+  const [projectTitle, setProjectTitle] = useState<string>('');
 
   const fetchVenues = async () => {
     setLoading(true);
     try {
+      const projRes = await api.get(`/project/${id || 'demo'}`);
+      if (projRes.data.project) {
+        setProjectTitle(projRes.data.project.academicTitle || projRes.data.project.title || 'Research Project');
+      }
+
       const response = await api.get(`/project/${id || 'demo'}/venues`);
       if (response.data.venues && response.data.venues.length > 0) {
         setVenues(response.data.venues);
@@ -81,13 +87,26 @@ export function VenueMatcher() {
               <span>TARGET PUBLICATION VENUE MATCHER</span>
             </div>
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Publication Matcher & Submission Vault</h1>
+            {projectTitle && (
+              <p className="text-xs text-slate-600 font-mono mt-0.5 truncate max-w-2xl">
+                Topic: {projectTitle}
+              </p>
+            )}
           </div>
 
-          <Link to="/dashboard">
-            <Button variant="secondary" size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
-              Return to Workspace Dashboard
-            </Button>
-          </Link>
+          <div className="flex items-center space-x-3">
+            <Link to={`/project/${id || 'demo'}/audit`}>
+              <Button variant="outline" size="sm" leftIcon={<ChevronLeft className="w-4 h-4" />}>
+                Back to Stage 6
+              </Button>
+            </Link>
+
+            <Link to="/dashboard">
+              <Button variant="secondary" size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
+                Return to Dashboard
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* 1-Click Submission Vault Card */}
@@ -99,7 +118,7 @@ export function VenueMatcher() {
                 <h2 className="text-base font-bold tracking-tight">Camera-Ready Submission Archive (.zip)</h2>
               </div>
               <p className="text-xs text-slate-300">
-                Bundles compiled PDF, LaTeX manuscript, BibTeX citations, and compliance audit log into a single submission bundle.
+                Bundles compiled PDF, LaTeX manuscript, BibTeX citations, and compliance audit log into a verified submission bundle.
               </p>
             </div>
 
@@ -111,7 +130,7 @@ export function VenueMatcher() {
               className="bg-white text-navy-900 hover:bg-slate-100 border-none font-semibold shrink-0"
               leftIcon={downloadSuccess ? <Check className="w-4 h-4 text-emerald-600" /> : <Download className="w-4 h-4 text-navy-900" />}
             >
-              {downloadSuccess ? 'Submission Bundle Downloaded!' : 'Export Submission Package (.zip)'}
+              {downloadSuccess ? 'Archive Exported!' : 'Export Submission Package (.zip)'}
             </Button>
           </div>
 
@@ -138,14 +157,23 @@ export function VenueMatcher() {
         {/* Dynamic Targeted Venues Grid */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-bold text-slate-900 text-base">Recommended Target Venues (Ranked by Topic Fit)</h2>
+            <div>
+              <h2 className="font-bold text-slate-900 text-base">Recommended Target Venues (Ranked by Topic Fit)</h2>
+              <p className="text-xs text-slate-500">Includes Conferences and High-Impact Journals with online & hybrid submission options.</p>
+            </div>
             <Badge variant="info">CORE Rank A* & High-Impact Journals</Badge>
           </div>
 
           {loading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-28 w-full" />
-              <Skeleton className="h-28 w-full" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-white border border-slate-200 rounded p-6 space-y-3 animate-pulse">
+                <div className="h-5 w-48 bg-slate-200 rounded" />
+                <div className="h-10 bg-slate-100 rounded" />
+              </div>
+              <div className="bg-white border border-slate-200 rounded p-6 space-y-3 animate-pulse">
+                <div className="h-5 w-48 bg-slate-200 rounded" />
+                <div className="h-10 bg-slate-100 rounded" />
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -168,11 +196,16 @@ export function VenueMatcher() {
                           <span className="font-bold text-slate-900 text-sm block">{venue.name}</span>
                           <span className="font-mono text-xs font-semibold text-navy-800">{venue.acronym}</span>
                         </div>
-                        <Badge variant="info" size="sm">{venue.rank}</Badge>
+                        <div className="flex items-center space-x-1.5">
+                          <Badge variant="info" size="sm">{venue.rank}</Badge>
+                          <Badge variant={venue.mode === 'HYBRID' ? 'pass' : 'neutral'} size="sm">
+                            {venue.mode}
+                          </Badge>
+                        </div>
                       </div>
 
                       {venue.relevanceReason && (
-                        <p className="text-xs text-slate-600 bg-slate-50 p-2 rounded border border-slate-100 italic">
+                        <p className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded border border-slate-100 italic">
                           "{venue.relevanceReason}"
                         </p>
                       )}
@@ -198,7 +231,7 @@ export function VenueMatcher() {
                             target="_blank"
                             rel="noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="text-xs text-navy-800 hover:underline flex items-center font-mono"
+                            className="text-xs text-navy-800 font-mono hover:underline flex items-center"
                           >
                             Call for Papers <ExternalLink className="w-3 h-3 ml-1" />
                           </a>
@@ -211,6 +244,9 @@ export function VenueMatcher() {
             </div>
           )}
         </div>
+
+        {/* Persistent Side-by-Side Paper Drafting Studio Drawer */}
+        <SidePaperDrawer projectId={id || 'demo'} />
       </main>
     </div>
   );

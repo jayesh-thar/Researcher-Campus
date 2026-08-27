@@ -15,21 +15,23 @@ router.get('/project/:id/roadmap', requireAuth, async (req: AuthenticatedRequest
       return res.status(404).json({ error: 'Project not found' });
     }
 
-    // Auto-generate dynamic roadmap if not initialized or has generic placeholder
-    if (!project.roadmap?.datasets || project.roadmap.datasets.length === 0) {
+    // Auto-generate dynamic roadmap if not initialized or has empty datasets/tools
+    if (!project.roadmap?.datasets || project.roadmap.datasets.length === 0 || !project.roadmap?.tools || project.roadmap.tools.length === 0) {
       const dynamic = await generateDynamicRoadmap(
         project.academicTitle || project.title || 'Research Project',
         project.methodologyOverview || 'Proposed Methodology'
       );
 
-      const checklist = dynamic.milestones.flatMap((m) =>
-        m.tasks.map((taskStr, idx) => ({
-          id: `t-${m.phase.toLowerCase()}-${idx + 1}`,
-          phase: m.phase,
-          task: taskStr,
-          isCompleted: false
-        }))
-      );
+      const checklist = (project.roadmap?.checklist && project.roadmap.checklist.length > 0)
+        ? project.roadmap.checklist
+        : dynamic.milestones.flatMap((m) =>
+            m.tasks.map((taskStr, idx) => ({
+              id: `t-${m.phase.toLowerCase()}-${idx + 1}`,
+              phase: m.phase,
+              task: taskStr,
+              isCompleted: false
+            }))
+          );
 
       project.roadmap = {
         datasets: dynamic.datasets,
@@ -116,17 +118,24 @@ router.post('/project/:id/roadmap/task', requireAuth, async (req: AuthenticatedR
         existingTasks: project.roadmap.checklist.map((t: any) => t.task)
       });
 
-      const newTasks = (assistant.suggestedTasks || [prompt]).map((tStr) => ({
-        id: `t-ai-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-        phase: (phase || 'DEVELOPMENT') as 'ENVIRONMENT' | 'DEVELOPMENT' | 'EVALUATION' | 'SYNTHESIS',
-        task: tStr,
-        isCompleted: false
-      }));
+      // Only add tasks if the AI assistant actually suggested new, non-duplicate tasks
+      if (assistant.suggestedTasks && assistant.suggestedTasks.length > 0) {
+        assistant.suggestedTasks.forEach((taskStr) => {
+          const alreadyExists = project.roadmap.checklist.some((t: any) => t.task.toLowerCase() === taskStr.toLowerCase());
+          if (!alreadyExists) {
+            project.roadmap.checklist.push({
+              id: `t-ai-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+              phase: (phase || 'DEVELOPMENT') as 'ENVIRONMENT' | 'DEVELOPMENT' | 'EVALUATION' | 'SYNTHESIS',
+              task: taskStr,
+              isCompleted: false
+            });
+          }
+        });
 
-      newTasks.forEach((t) => project.roadmap.checklist.push(t));
+        project.markModified('roadmap');
+        await project.save();
+      }
 
-      project.markModified('roadmap');
-      await project.save();
       return res.json({
         roadmap: project.roadmap,
         readinessPercent: calculateReadiness(project.roadmap.checklist),
@@ -141,7 +150,7 @@ router.post('/project/:id/roadmap/task', requireAuth, async (req: AuthenticatedR
   }
 });
 
-// DELETE /api/project/:id/roadmap/task/:taskId - Delete or undo task
+// DELETE /api/project/:id/roadmap/task/:taskId - Delete task
 router.delete('/project/:id/roadmap/task/:taskId', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id, taskId } = req.params;
