@@ -109,49 +109,49 @@ export function LandingPage() {
     {
       num: 1,
       title: 'Stage 1: Idea Lab Reformulator',
-      desc: 'Transforms raw informal research ideas into publication-grade proposals using Gemini AI.',
+      desc: 'Transforms raw informal research ideas into publication-grade proposals with dynamic domain metric tags.',
       badge: 'Start Here',
       link: '/project/new'
     },
     {
       num: 2,
       title: 'Stage 2: 5-Engine Literature Scan',
-      desc: 'Harvests 5 global databases (Crossref, arXiv, Semantic Scholar, OpenAlex, Europe PMC) with vector similarity decision gate.',
+      desc: 'Live 5-database scanner (Crossref, arXiv, OpenAlex, Semantic Scholar, Europe PMC) with Drive report sync.',
       badge: 'Novelty Gate',
       link: '/project/new'
     },
     {
       num: 3,
-      title: 'Stage 3: Research Whitespace Board',
-      desc: 'Categorizes literature into Baselines, Competitors, and References with 1-click BibTeX import & export.',
+      title: 'Stage 3: Research Whitespace & Gaps',
+      desc: 'Deep AI literature gap discovery, competitor matrix breakdown, and 1-click BibTeX import & export.',
       badge: 'Gap Matrix',
       link: '/project/new'
     },
     {
       num: 4,
       title: 'Stage 4: Implementation Roadmap',
-      desc: 'Scouts Kaggle & HuggingFace datasets with a 4-phase milestone checklist and live readiness meter.',
-      badge: 'Checklist',
+      desc: 'Topic-tailored datasets & tools with a 4-phase milestone checklist and conversation-aware AI Co-Pilot.',
+      badge: 'AI Co-Pilot',
       link: '/project/new'
     },
     {
       num: 5,
       title: 'Stage 5: Paper Drafting Studio',
-      desc: 'Split-screen Markdown editor with live IEEE/ACM 2-column preview, KaTeX math blocks, and Google Drive auto-sync.',
-      badge: 'Drafting Canvas',
+      desc: 'Persistent side-by-side split drawer with live IEEE preview, KaTeX math blocks, and Google Drive auto-sync.',
+      badge: 'Side Studio',
       link: '/project/new'
     },
     {
       num: 6,
       title: 'Stage 6: AI Pre-Flight Auditor',
-      desc: 'Automated compliance checks verifying citation integrity, double-blind review anonymity, page limits, and academic tone.',
+      desc: 'Live manuscript audit verifying citation integrity, double-blind anonymity, and academic tone humanization.',
       badge: 'Compliance Guards',
       link: '/project/new'
     },
     {
       num: 7,
       title: 'Stage 7: Target Venue Matcher',
-      desc: 'Curated CS/AI conference directory with CORE Ranks (A*), acceptance rates, deadline countdowns, and 1-click submission package export.',
+      desc: 'Topic-matched CS/AI conferences and journals with CORE Ranks (A*), live Call for Papers links, and .zip package export.',
       badge: 'Venue Directory',
       link: '/project/new'
     }

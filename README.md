@@ -12,6 +12,7 @@
 | :--- | :--- | :--- |
 | 🎬 **Live Demo & Walkthrough Guide** | [`DEMO.md`](https://github.com/jayesh-thar/Researcher-Campus/blob/main/DEMO.md) | Step-by-step instructions for initializing local servers and running a live demo |
 | 🏗️ **Technical Architecture Document** | [`ARCHITECTURE.md`](https://github.com/jayesh-thar/Researcher-Campus/blob/main/ARCHITECTURE.md) | Deep-dive topology, Mermaid sequence diagrams, security & database schemas |
+| 🐛 **Bugs & Improvements Master Log** | [`bugs_and_improvements/BUGS_AND_IMPROVEMENTS_LOG.md`](https://github.com/jayesh-thar/Researcher-Campus/blob/main/bugs_and_improvements/BUGS_AND_IMPROVEMENTS_LOG.md) | Complete engineering changelog and technical resolution logs |
 
 ---
 
@@ -35,11 +36,12 @@ Computer science researchers, PhD candidates, and university students routinely 
 │                                    THE 7 SEQUENTIAL RESEARCH LIFECYCLES                                 │
 ├───────────────────┬───────────────────┬───────────────────┬───────────────────┬─────────────────────────┤
 │ Stage 1: Idea Lab │ Stage 2: Gate     │ Stage 3: Matrix   │ Stage 4: Roadmap  │ Stage 5: Paper Studio   │
-│ Gemini AI proposal│ 5-engine scan &   │ Research gap      │ 4-phase milestone │ Live split preview,     │
-│ reformulation.    │ Gate verdict.     │ & BibTeX export.  │ & AI task generator. KaTeX math & Drive sync.│
+│ Gemini AI proposal│ 5-engine scan,    │ Research gaps,    │ 4-phase milestone,│ Persistent side drawer, │
+│ reformulation.    │ Gate verdict &    │ competitor matrix │ conversational AI │ live IEEE preview &     │
+│                   │ Drive doc report. │ & BibTeX export.  │ & tool scout hub. │ LaTeX math exporter.    │
 ├───────────────────┴───────────────────┴───────────────────┴───────────────────┴─────────────────────────┤
 │ Stage 6: AI Pre-Flight Audit ➔ Stage 7: Target Venue Matcher & Submission Package (.zip)              │
-│ 4 compliance guards & 1-click auto-fix ➔ Conference directory, countdowns & final submission archive.   │
+│ 4 compliance guards, live paper editing ➔ Live conference directory, countdowns & final submission .zip.│
 └─────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -47,50 +49,51 @@ Computer science researchers, PhD candidates, and university students routinely 
 
 ## ⭐ Feature Deep Dive Across All 7 Stages
 
-### 💡 Stage 1: Idea Lab & Gemini AI Reformulator
-- **Dual Intake Interface**:
-  - *Mode A (Raw Idea)*: Takes informal 1–3 sentence prompts (e.g., *"An app that tracks student task deadlines"*).
-  - *Mode B (Existing Draft Upload / Paste)*: File dropzone & raw text intake.
-- **Gemini Pro Reformulation Engine**: Transforms informal text into a publication-grade academic proposal with a formal Academic Title, Problem Statement, Methodological Formulation, and Target Evaluation Metrics.
-- **Formulation Health Meter**: Score (0–100%) grading testability, scope boundaries, and clarity.
+### 💡 Stage 1: Idea Lab & Proposal Reformulator
+- **Reorganized Input Layout**: Editable Project Title placed first at the top, followed by the Research Idea / Draft Textarea.
+- **Dynamic Domain Detection**: Automatically infers exact domain (e.g. Healthcare & Medical ML, Systems, NLP, Security).
+- **Dynamic Evaluation Metric Tags**: Renders topic-appropriate metrics (e.g. AUC-ROC, Sensitivity, Precision for Disease ML; Latency, Throughput for Systems) with add/delete tag editing.
+- **Dual Flow**: Choose between **"Refine with AI Formulation"** or **"Proceed to Stage 2 with My Input"**.
 
 ### 🌐 Stage 2: 5-Engine Literature Gate Scan
-- **Multi-Engine Parallel Harvester**: Concurrently queries **5 academic databases**: Crossref (DOIs), arXiv (2024–2026 preprints), Semantic Scholar, OpenAlex, and Europe PMC.
+- **Parallel Multi-Harvester**: Concurrently queries **5 academic databases**: Crossref, arXiv (2024–2026 preprints), OpenAlex, Semantic Scholar, and Europe PMC.
 - **384-Dimensional Cosine Similarity & The Gate Verdict**:
   - 🟢 **PASS (<30% overlap)**: Clear research novelty.
   - 🟡 **SOFT WARNING (30–50% overlap)**: Moderate collision; AI provides 1-click differentiators.
   - 🔴 **HARD STOP (>50% overlap)**: Concept published; AI suggests 3 instant pivot angles.
-- **Side-by-Side Methodology Comparison**: Displays proposed methodology alongside closest published baseline with highlighted overlap tags.
+- **Live Step-by-Step Scanner Animation**: Real-time progress tracker across all 5 engines.
+- **1-Click Google Drive Report Sync**: Certified export: `[Project Title] - Stage 2 Literature Gate & Novelty Report.doc`.
+- **Paper Inspection Modal**: Full abstract, methodology gap, and BibTeX copy for every baseline.
 
-### 🔬 Stage 3: Research Whitespace & Literature Matrix Board
-- **Research Whitespace Declaration**: Prominent banner declaring the exact technical gap unaddressed by published literature.
-- **Categorized Literature Cards**: Filterable view across **🏆 Foundational Baselines**, **⚡ Direct Competitors**, and **🔬 Methodological References** with verified clickable DOIs.
-- **1-Click Citation Exporter**: Downloads structured `.bib` BibTeX files for Zotero, Mendeley, and EndNote integration.
+### 🔬 Stage 3: Whitespace Board & AI Research Gaps
+- **Dual Tab Interface**:
+  1. *Published Baseline Matrix*: Filterable view across **🏆 Foundational Baselines**, **⚡ Direct Competitors**, and **🔬 References** with verified clickable DOIs.
+  2. *AI Research Gaps Discovery*: 3 deep scientific gaps identified by Gemini AI with baseline limitations and proposed innovation angles.
+- **1-Click Citation Exporter**: Downloads structured `.bib` BibTeX files.
 
-### 🗺️ Stage 4: Implementation Roadmap & Local Milestone Checklist
-- **Resource Scout Hub**: Connects research to Kaggle/HuggingFace open datasets and PyTorch/TipTap tool recommendations.
-- **Interactive 4-Phase Local Milestone Checklist**: Milestone tracking across `ENVIRONMENT`, `DEVELOPMENT`, `EVALUATION`, and `SYNTHESIS`.
-- **Gemini AI Task Generator**: Auto-generates custom technical tasks on demand (*"Add 3 security audit tasks"*).
-- **Implementation Readiness Meter**: Real-time progress bar calculating completion percentage.
+### 🗺️ Stage 4: Implementation Roadmap & Conversational AI Co-Pilot
+- **Dynamic Resource Scout Hub**: Topic-tailored open datasets (Kaggle, HuggingFace, UCI) and specialized libraries (LightGBM, imbalanced-learn, SHAP, PyTorch).
+- **Interactive 4-Phase Milestone Checklist**: Milestone tracking across `ENVIRONMENT`, `DEVELOPMENT`, `EVALUATION`, and `SYNTHESIS`.
+- **Conversational AI Research Co-Pilot**: Intelligent, context-aware assistant for ablation studies and milestone planning without duplicate task repetition.
+- **Implementation Readiness Meter**: Real-time completion progress bar.
 
-### 📝 Stage 5: Paper Drafting Studio & Google Drive Cloud Sync
+### 📝 Stage 5: Paper Drafting Studio & Persistent Side-by-Side Drawer
+- **Persistent Side-by-Side Paper Studio (`<SidePaperDrawer />`)**: Available from Stage 3, Stage 4, Stage 6, and Stage 7 for uninterrupted drafting.
 - **Template Selector**: Switch between **IEEE Conference (2-Column)**, **ACM SIGPLAN / CHI**, **Nature Journal**, and **Custom CS Manuscript** modes.
-- **Live Split-Screen Canvas**: Distraction-free Markdown editor on left + live academic rendered manuscript preview on right.
-- **KaTeX Math & Citation Tools**: LaTeX math equation blocks (`$$\min_{\theta} \sum w_i L(t_i)$$`) and citation handles (`@chen2024`).
+- **KaTeX Math & Citation Tools**: LaTeX math equation blocks (`$$\min_{\theta} \mathcal{L}(\theta)$$`) and tables.
 - **Google Drive Auto-Sync**: Background auto-sync to MongoDB and Google Drive cloud storage (`🟢 Synced`).
 
 ### 🛡️ Stage 6: Automated AI Pre-Flight Compliance Auditor
+- **Inline Manuscript Editing & Re-Audit**: View and edit the manuscript draft side-by-side and re-audit on the fly.
 - **4 Compliance Verification Guards**:
-  1. 🔍 *Citation Integrity Guard*: Scans for unreferenced citation handles (`@key`).
-  2. 🕵️ *Blind Review Anonymity Guard*: Flags leaked author names or personal repository links violating double-blind rules.
-  3. 📏 *Formatting & Page Limits Guard*: Verifies Abstract presence and figure caption rules.
-  4. 🎓 *Academic Tone Guard*: Flags informal phrasing (*"cool"*, *"a lot of"*) and suggests publication-grade alternatives.
-- **1-Click AI Auto-Fix Engine**: Resolves anonymity leaks and informal tone in 1 click.
+  1. 🔍 *Citation Integrity Guard*: Scans for in-text citation validity and DOIs.
+  2. 🕵️ *Blind Review Anonymity Guard*: Flags leaked author names or personal repository links.
+  3. 📏 *Formatting & Structure Guard*: Verifies Abstract, LaTeX math, and section structures.
+  4. 🎓 *Academic Tone & Humanization Guard*: Scores natural academic writing style (95%+).
 
 ### 🎯 Stage 7: Target Venue Matcher & Submission Package Exporter
-- **Target Venue Directory**: CS/AI conference database (IEEE ICSE, ACM CHI, USENIX Security, ISSTA) with CORE Ranks (`A*`), acceptance rates (`19.4%`), and official portal links.
-- **Submission Countdown Portal**: Dynamic countdown timers (`42 Days Left`).
-- **1-Click Submission Package Exporter**: Bundles compiled manuscript `.pdf`/`.tex`, `.bib` references, and anonymized benchmark artifacts into a final `.zip` archive.
+- **Target Venue Directory**: Conferences and top journals ranked by topic fit with CORE Ranks (`A*`), acceptance rates, deadlines, location, and mode (**Hybrid**, **Virtual/Online**, **In-Person**).
+- **1-Click Submission Package Exporter**: Bundles compiled manuscript `.pdf`/`.tex`, `.bib` references, and audit logs into a final `.zip` archive.
 
 ---
 
@@ -98,52 +101,43 @@ Computer science researchers, PhD candidates, and university students routinely 
 
 ```
 researcher-campus/
-├── client/                              # Frontend React 18 App (Vite + TypeScript + Tailwind)
+├── client/                     # React 18 + Vite + TypeScript + Tailwind CSS (Port 3000)
 │   ├── src/
-│   │   ├── components/                  # UI Primitives & Navbar Layout
-│   │   ├── pages/                       # Dashboard & 7 Stage Views (IdeaLab ➔ VenueMatcher)
-│   │   ├── services/                    # Axios API Client (Bearer Token Interceptor)
-│   │   └── App.tsx                      # React Router DOM Setup
-│   └── package.json
-├── server/                              # Backend Express REST Server (Node.js + Mongoose)
+│   │   ├── components/layout/  # Navbar, SidePaperDrawer, Layout Shells
+│   │   ├── components/auth/    # ProtectedRoute guards
+│   │   ├── components/ui/      # Button, Card, Badge, Input, CommandPalette, BibtexModal
+│   │   ├── pages/              # LandingPage, Login, Onboarding, Dashboard, Stages 1-7
+│   │   └── services/           # Axios API client
+├── server/                     # Node.js + Express.js + Mongoose MongoDB (Port 5000)
 │   ├── src/
-│   │   ├── config/                      # db.ts (Mongoose Connection Pooling)
-│   │   ├── utils/                       # jwt.ts (Dual-Token Auth) & crypto.ts (AES-256-GCM)
-│   │   ├── models/                      # User.ts & Project.ts Mongoose Schemas
-│   │   ├── services/                    # geminiService.ts & literatureService.ts
-│   │   ├── routes/                      # authRoutes, aiRoutes, literatureRoutes, roadmapRoutes, driveRoutes, auditRoutes, venueRoutes
-│   │   └── index.ts                     # Express Bootstrap (Port 5000)
-│   └── package.json
-├── implementation/                      # Master IMPLEMENTATION_PLAN.md
-├── reports/                             # Technical change reports (PHASE_0 to PHASE_7, FULL_PROJECT_REPORT)
-├── understanding/                       # Educational guides (PHASE_0 to PHASE_7, FULL_PROJECT_UNDERSTANDING)
-├── DEMO.md                              # Live Demo & Walkthrough Guide
-└── ARCHITECTURE.md                      # Technical Architecture & Sequence Diagrams
+│   │   ├── config/             # MongoDB fallback connection handling
+│   │   ├── models/             # User, Project MongoDB Schemas
+│   │   ├── routes/             # authRoutes, literatureRoutes, roadmapRoutes, venueRoutes, driveRoutes, aiRoutes
+│   │   ├── services/           # geminiService, literatureService, driveService
+│   │   ├── middlewares/        # Dual-token JWT authMiddleware
+│   │   └── utils/              # Token crypto & signing
 ```
 
 ---
 
-## 🚀 Quick Start Commands
+## 🚀 Quick Start Guide
 
-### 1. Start Express API Backend Server
+### Prerequisites
+- **Node.js**: v18+ or v20+
+- **MongoDB**: Local MongoDB instance (`mongodb://127.0.0.1:27017`) or MongoDB Atlas URI
+
+### 1. Start Server Backend
 ```bash
 cd server
 npm install
 npm run dev
-# Running on http://localhost:5000
+# Express API server listening on http://localhost:5000
 ```
 
-### 2. Start React Vite Frontend Application
+### 2. Start Client Frontend
 ```bash
 cd client
 npm install
 npm run dev
-# Running on http://localhost:3000
+# Vite client development server running on http://localhost:3000
 ```
-
----
-
-## 🧪 Production Verification Status
-- **Server Typecheck**: `cd server && npx tsc --noEmit` ➔ **0 errors**
-- **Client Typecheck**: `cd client && npx tsc --noEmit` ➔ **0 errors**
-- **Client Bundle Build**: `cd client && npm run build` ➔ **1662 modules transformed, dist/ built in 16.05s**
