@@ -166,14 +166,14 @@ const handleProjectCreate = async (req: AuthenticatedRequest, res: Response) => 
         template: 'IEEE',
         contentMarkdown: `# ${academicTitle || title}\n\n## Abstract\n${problemStatement || ''}\n\n## 1. Introduction\n...`
       },
-      auditReport: {
+      audit: {
         isPassed: false,
         overallScore: 0,
         citationIntegrity: false,
         anonymityCheck: false,
         formattingCompliance: false,
         academicToneScore: 0,
-        flaggedIssues: []
+        issuesFound: []
       }
     });
 
