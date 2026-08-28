@@ -12,6 +12,7 @@
 | :--- | :--- | :--- |
 | 🎬 **Live Demo & Walkthrough Guide** | [`DEMO.md`](https://github.com/jayesh-thar/Researcher-Campus/blob/main/DEMO.md) | Step-by-step instructions for initializing local servers and running an end-to-end live demo |
 | 🏗️ **Technical Architecture Document** | [`ARCHITECTURE.md`](https://github.com/jayesh-thar/Researcher-Campus/blob/main/ARCHITECTURE.md) | Deep-dive topology, Mermaid sequence diagrams, security & database schemas |
+| 🧠 **Autonomous AI Engine Architecture** | [`AI_ENGINE_ARCHITECTURE.md`](https://github.com/jayesh-thar/Researcher-Campus/blob/main/AI_ENGINE_ARCHITECTURE.md) | In-depth technical specifications of Google Gemini cascading models, schemas, and pipelines |
 | 🔒 **Security & Privacy Policy** | [`SECURITY.md`](https://github.com/jayesh-thar/Researcher-Campus/blob/main/SECURITY.md) | Dual-token authentication, AES-256-GCM encryption, and vulnerability disclosure policy |
 | 🤝 **Contributing Guidelines** | [`CONTRIBUTING.md`](https://github.com/jayesh-thar/Researcher-Campus/blob/main/CONTRIBUTING.md) | Local development guidelines, coding conventions, and PR workflow |
 
