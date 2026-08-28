@@ -63,7 +63,7 @@ export interface DynamicVenueResult {
 }
 
 // DYNAMIC RUNTIME GEMINI CLIENT ACQUISITION (Supports GOOGLE_API_KEY and GEMINI_API_KEY Auth Keys)
-function getGenAIClient(): GoogleGenerativeAI | null {
+export function getGenAIClient(): GoogleGenerativeAI | null {
   const key = (process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY)?.trim() || '';
   if (!key || key.includes('xxxx') || key === 'your_gemini_api_key_here' || key.length < 10) {
     return null;

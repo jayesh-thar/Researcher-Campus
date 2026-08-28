@@ -34,3 +34,6 @@ export function decryptText(encryptedData: string): string {
   
   return decrypted;
 }
+
+export const encryptToken = encryptText;
+export const decryptToken = decryptText;
