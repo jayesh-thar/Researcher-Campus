@@ -104,8 +104,13 @@ export function Login() {
   };
 
   const handleGoogleSignIn = async () => {
+    const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    if (!googleClientId) {
+      setError('Google Sign-In is not configured. Please set VITE_GOOGLE_CLIENT_ID in your environment.');
+      return;
+    }
+
     setLoading(true);
-    const googleClientId = '286990208369-m4649d061kk5ra97n316mh5vkr0rf8br.apps.googleusercontent.com';
     // Ensure clean origin without trailing slashes matching exact console URI
     const origin = window.location.origin.replace(/\/$/, '');
     const redirectUri = encodeURIComponent(`${origin}/login`);
