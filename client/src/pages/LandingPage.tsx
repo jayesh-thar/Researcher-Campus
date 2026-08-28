@@ -166,7 +166,7 @@ export function LandingPage() {
         <div ref={heroRef} className="max-w-4xl space-y-6">
           <div ref={badgeRef} className="inline-flex items-center space-x-2 bg-white border border-slate-300 px-3.5 py-1.5 rounded text-xs text-navy-800 font-semibold shadow-2xs">
             <Sparkles className="w-4 h-4 text-navy-800 shrink-0" />
-            <span>Autonomous AI Academic Operating System • Public Beta 1.0</span>
+            <span>Autonomous AI Research Environment • Public Beta 1.0</span>
           </div>
 
           <h1
@@ -358,7 +358,7 @@ export function LandingPage() {
               <span className="font-bold text-slate-900 text-sm">Researcher Campus</span>
             </div>
             <p className="text-slate-500 leading-relaxed">
-              Autonomous AI Academic Operating System guiding researchers from raw idea formulation to verified conference submission packages.
+              Autonomous AI Research Environment guiding researchers from raw idea formulation to verified conference submission packages.
             </p>
           </div>
 
