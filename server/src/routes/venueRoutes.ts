@@ -40,11 +40,11 @@ router.get('/project/:id/venues', requireAuth, async (req: AuthenticatedRequest,
       acronym: v.acronym,
       domain: project.domain || 'Computer Science & AI',
       deadlineDate: v.deadline,
-      location: 'Hybrid / International',
-      mode: 'HYBRID',
+      location: v.location || 'Hybrid / International',
+      mode: (v.mode || 'HYBRID') as 'HYBRID' | 'IN_PERSON' | 'VIRTUAL',
       acceptanceRate: v.acceptanceRate,
-      rank: (v.coreRank.includes('A*') ? 'A*' : v.coreRank.includes('A') ? 'A' : 'B') as 'A*' | 'A' | 'B',
-      url: 'https://core.edu.au/',
+      rank: (v.coreRank && v.coreRank.includes('A*') ? 'A*' : v.coreRank && v.coreRank.includes('A') ? 'A' : 'B') as 'A*' | 'A' | 'B',
+      url: v.url || 'https://core.edu.au/',
       relevanceReason: v.relevanceReason
     }));
 
