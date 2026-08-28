@@ -62,31 +62,45 @@ export interface DynamicVenueResult {
   }>;
 }
 
-// DYNAMIC RUNTIME GEMINI CLIENT ACQUISITION
+// DYNAMIC RUNTIME GEMINI CLIENT ACQUISITION (Supports GOOGLE_API_KEY and GEMINI_API_KEY Auth Keys)
 function getGenAIClient(): GoogleGenerativeAI | null {
-  const key = process.env.GEMINI_API_KEY?.trim() || '';
+  const key = (process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY)?.trim() || '';
   if (!key || key.includes('xxxx') || key === 'your_gemini_api_key_here' || key.length < 10) {
     return null;
   }
   return new GoogleGenerativeAI(key);
 }
 
-// CASCADING MULTI-MODEL FALLBACK CHAIN (1.5-flash -> 2.0-flash -> 1.5-pro)
-async function generateWithModelFallback(prompt: string): Promise<string | null> {
+// CASCADING MULTI-MODEL FALLBACK CHAIN (2.0-flash -> 1.5-flash -> 1.5-pro -> 3.7-flash)
+async function generateWithModelFallback(prompt: string, isJson: boolean = true): Promise<string | null> {
   const client = getGenAIClient();
   if (!client) return null;
 
-  const candidateModels = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
+  // Optimized candidate models list aligned with latest Google AI Studio standards
+  const candidateModels = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-3.7-flash'];
   for (const modelName of candidateModels) {
     try {
-      const model = client.getGenerativeModel({ model: modelName });
+      const model = client.getGenerativeModel({
+        model: modelName,
+        generationConfig: isJson ? { responseMimeType: 'application/json' } : undefined
+      });
       const result = await model.generateContent(prompt);
       const text = result.response.text();
       if (text && text.trim().length > 0) {
         return text;
       }
     } catch (err: any) {
-      console.warn(`[Gemini AI] Model ${modelName} notice: ${err?.message || err}`);
+      // If structured output config failed, retry plain text prompt on same model
+      try {
+        const fallbackModel = client.getGenerativeModel({ model: modelName });
+        const res = await fallbackModel.generateContent(prompt);
+        const plainText = res.response.text();
+        if (plainText && plainText.trim().length > 0) {
+          return plainText;
+        }
+      } catch (innerErr: any) {
+        console.warn(`[Gemini AI] Model ${modelName} notice: ${innerErr?.message || innerErr}`);
+      }
     }
   }
   return null;
