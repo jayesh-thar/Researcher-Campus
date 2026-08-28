@@ -131,8 +131,8 @@ router.post('/project/:id/literature/import', requireAuth, async (req: Authentic
   }
 });
 
-// POST /api/project/create - Stage 1 to Stage 2 Initialization
-router.post('/create', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+// POST /api/project/create & POST /api/create - Stage 1 to Stage 2 Initialization
+const handleProjectCreate = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.userId;
     const { title, rawInput, academicTitle, problemStatement, methodologyOverview, domain } = req.body;
@@ -173,9 +173,8 @@ router.post('/create', requireAuth, async (req: AuthenticatedRequest, res: Respo
         anonymityCheck: false,
         formattingCompliance: false,
         academicToneScore: 0,
-        issuesFound: []
-      },
-      targetVenues: []
+        flaggedIssues: []
+      }
     });
 
     return res.status(201).json({
@@ -186,7 +185,10 @@ router.post('/create', requireAuth, async (req: AuthenticatedRequest, res: Respo
     console.error('Create project error:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
-});
+};
+
+router.post('/project/create', requireAuth, handleProjectCreate);
+router.post('/create', requireAuth, handleProjectCreate);
 
 // GET /api/project/:id
 router.get('/project/:id', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
