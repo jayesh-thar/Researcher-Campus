@@ -9,8 +9,8 @@ Node.js + Express.js + Mongoose MongoDB REST API backend powering all AI synthes
 - **Runtime**: Node.js v18+ / v20+
 - **Framework**: Express.js
 - **Database**: MongoDB with Mongoose ODM
-- **AI Engine**: Google Gemini Pro SDK with Multi-Model Fallback (`gemini-1.5-flash` ➔ `gemini-2.0-flash` ➔ `gemini-1.5-pro` ➔ Heuristics)
-- **Security**: Dual-Token JWT (jsonwebtoken), bcrypt password hashing, AES-256-GCM token encryption
+- **AI Engine**: Google Gemini API SDK with Multi-Model Fallback (`gemini-2.0-flash` ➔ `gemini-1.5-flash` ➔ `gemini-1.5-pro` ➔ `gemini-3.7-flash` ➔ Domain Heuristics) with native structured JSON output mode (`responseMimeType: 'application/json'`)
+- **API Keys**: Supports both Google AI Studio **Auth Keys** and Standard Keys (`GOOGLE_API_KEY` & `GEMINI_API_KEY`)
 
 ---
 

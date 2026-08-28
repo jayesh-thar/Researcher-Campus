@@ -30,7 +30,7 @@ graph TD
 
     subgraph DB ["Persistence & External Services Layer"]
         MongoDB[("Mongoose MongoDB Database<br/>(User & Project Schemas)")]
-        Gemini["Google Gemini Pro AI API<br/>(1.5-flash / 2.0-flash / 1.5-pro Cascade)"]
+        Gemini["Google Gemini AI Multi-Model Cascade<br/>(2.0-flash / 1.5-flash / 1.5-pro / 3.7-flash<br/>with JSON Schema Mode)"]
         Apis["5 Academic Literature Engines<br/>(Crossref, arXiv, Semantic Scholar, OpenAlex, Europe PMC)"]
     end
 
