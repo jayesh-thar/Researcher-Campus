@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { WifiOff, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { WifiOff, RefreshCw } from 'lucide-react';
 import { api } from '../../services/api';
 
 export const ServerStatusGuard: React.FC = () => {
@@ -9,7 +9,7 @@ export const ServerStatusGuard: React.FC = () => {
   const checkHealth = async () => {
     setChecking(true);
     try {
-      await api.get('/health', { timeout: 3000 });
+      await api.get('/health', { timeout: 4000 });
       setIsOffline(false);
     } catch {
       setIsOffline(true);
@@ -20,7 +20,7 @@ export const ServerStatusGuard: React.FC = () => {
 
   useEffect(() => {
     checkHealth();
-    const interval = setInterval(checkHealth, 15000);
+    const interval = setInterval(checkHealth, 20000);
     return () => clearInterval(interval);
   }, []);
 
@@ -31,10 +31,7 @@ export const ServerStatusGuard: React.FC = () => {
       <div className="flex items-center space-x-2">
         <WifiOff className="w-4 h-4 text-red-300 animate-pulse shrink-0" />
         <span className="font-semibold text-red-100">
-          Backend API Offline: Express Server at <code className="bg-red-950 px-1 py-0.5 rounded text-red-200">http://localhost:5000</code> is unreachable.
-        </span>
-        <span className="hidden md:inline text-red-300">
-          (Run <code className="bg-red-950 px-1 py-0.5 rounded text-red-200">npm run dev</code> in server/ directory)
+          Backend API Offline: Express Server is unreachable. Please check backend server status.
         </span>
       </div>
 
