@@ -158,8 +158,8 @@ const handleProjectCreate = async (req: AuthenticatedRequest, res: Response) => 
       },
       literature: [],
       roadmap: {
-        datasets: [],
-        tools: [],
+        recommendedDatasets: [],
+        recommendedTools: [],
         checklist: []
       },
       document: {
@@ -187,8 +187,8 @@ const handleProjectCreate = async (req: AuthenticatedRequest, res: Response) => 
   }
 };
 
+// Canonical Project Creation Endpoint
 router.post('/project/create', requireAuth, handleProjectCreate);
-router.post('/create', requireAuth, handleProjectCreate);
 
 // GET /api/project/:id
 router.get('/project/:id', requireAuth, async (req: AuthenticatedRequest, res: Response) => {

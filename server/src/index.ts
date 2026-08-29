@@ -25,17 +25,21 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
+    // Allow requests with no origin (e.g. mobile apps, curl, server-to-server, Postman)
     if (!origin) return callback(null, true);
     if (
       allowedOrigins.includes(origin) ||
       origin.endsWith('.vercel.app') ||
       origin.endsWith('.onrender.com') ||
-      origin.includes('localhost')
+      origin.includes('localhost') ||
+      origin.includes('127.0.0.1')
     ) {
       return callback(null, true);
     }
-    return callback(null, true); // Permissive for academic workstation access
+    if (process.env.NODE_ENV === 'production') {
+      return callback(new Error('Blocked by CORS policy: Unauthorized Origin.'));
+    }
+    return callback(null, true);
   },
   credentials: true
 }));

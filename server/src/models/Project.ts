@@ -70,6 +70,7 @@ export interface IProject extends Document {
     rank?: string;
     url: string;
   }>;
+  currentStage: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -82,6 +83,7 @@ const ProjectSchema = new Schema<IProject>({
   problemStatement: { type: String, default: '' },
   methodologyOverview: { type: String, default: '' },
   domain: { type: String, default: '' },
+  currentStage: { type: Number, default: 1 },
   gateResult: {
     status: { type: String, enum: ['PASS', 'SOFT_WARNING', 'HARD_STOP'], default: 'PASS' },
     noveltyScore: { type: Number, default: 100 },

@@ -63,33 +63,34 @@ describe('Literature Engine & Vector Cosine Similarity Tests', () => {
   });
 
   describe('Live Academic API Harvester Functions', () => {
-    it('should query Crossref API and return normalized papers or handle gracefully', async () => {
+    it('should query Crossref API and return normalized papers', async () => {
       const papers = await harvestFromCrossref('machine learning healthcare');
       expect(Array.isArray(papers)).toBe(true);
-      if (papers.length > 0) {
-        expect(papers[0].sourceEngine).toBe('Crossref');
-        expect(papers[0].title).toBeDefined();
-        expect(papers[0].year).toBeGreaterThanOrEqual(1900);
-      }
+      expect(papers.length).toBeGreaterThan(0);
+      expect(papers[0].sourceEngine).toBe('Crossref');
+      expect(papers[0].title).toBeDefined();
+      expect(papers[0].title.length).toBeGreaterThan(3);
+      expect(papers[0].year).toBeGreaterThanOrEqual(1900);
+      expect(papers[0].doiUrl).toContain('doi.org');
     });
 
     it('should query arXiv API and parse Atom XML properly', async () => {
       const papers = await harvestFromArxiv('deep learning transformer');
       expect(Array.isArray(papers)).toBe(true);
-      if (papers.length > 0) {
-        expect(papers[0].sourceEngine).toBe('arXiv');
-        expect(papers[0].venue).toBe('arXiv Preprint Repository');
-        expect(papers[0].doiUrl).toContain('arxiv.org');
-      }
+      expect(papers.length).toBeGreaterThan(0);
+      expect(papers[0].sourceEngine).toBe('arXiv');
+      expect(papers[0].venue).toBe('arXiv Preprint Repository');
+      expect(papers[0].doiUrl).toContain('arxiv.org');
+      expect(papers[0].abstract.length).toBeGreaterThan(10);
     });
 
     it('should query OpenAlex API properly', async () => {
       const papers = await harvestFromOpenAlex('distributed systems consensus');
       expect(Array.isArray(papers)).toBe(true);
-      if (papers.length > 0) {
-        expect(papers[0].sourceEngine).toBe('OpenAlex');
-        expect(papers[0].title).toBeDefined();
-      }
+      expect(papers.length).toBeGreaterThan(0);
+      expect(papers[0].sourceEngine).toBe('OpenAlex');
+      expect(papers[0].title).toBeDefined();
+      expect(papers[0].title.length).toBeGreaterThan(3);
     });
 
     it('should execute end-to-end multi-engine scan and return valid GateScanResult', async () => {
