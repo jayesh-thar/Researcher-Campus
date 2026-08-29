@@ -76,8 +76,14 @@ async function generateWithModelFallback(prompt: string, isJson: boolean = true)
   const client = getGenAIClient();
   if (!client) return null;
 
-  // Production candidate models list aligned with official Google AI Studio standards
-  const candidateModels = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash-lite'];
+  // Active Google Gemini model tiers (Gemini 2.5 Flash, 3.7 Flash, 2.5 Pro, 2.5 Flash-Lite, 2.0 Flash)
+  const candidateModels = [
+    'gemini-2.5-flash',
+    'gemini-3.7-flash',
+    'gemini-2.5-pro',
+    'gemini-2.5-flash-lite',
+    'gemini-2.0-flash'
+  ];
   for (const modelName of candidateModels) {
     try {
       const model = client.getGenerativeModel({
