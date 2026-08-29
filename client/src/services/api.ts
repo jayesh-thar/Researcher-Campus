@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Dynamic API Base URL: Uses VITE_API_URL in production or defaults to local backend
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000/api' : '/api');
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
