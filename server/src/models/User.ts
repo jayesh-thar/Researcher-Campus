@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+﻿import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IUser extends Document {
   name: string;
@@ -6,7 +6,7 @@ export interface IUser extends Document {
   passwordHash?: string;
   googleId?: string;
   avatarUrl?: string;
-  persona: 'STUDENT' | 'PHD' | 'PROFESSOR' | 'INDUSTRY' | 'INDEPENDENT';
+  persona: 'STUDENT' | 'PHD' | 'PROFESSOR' | 'INDUSTRY' | 'INDEPENDENT' | 'RESEARCHER';
   primaryDomain: string;
   targetVenuePreference?: string;
   techStack?: string[];
@@ -36,12 +36,12 @@ const UserSchema: Schema = new Schema<IUser>(
     avatarUrl: { type: String },
     persona: {
       type: String,
-      enum: ['STUDENT', 'PHD', 'PROFESSOR', 'INDUSTRY', 'INDEPENDENT'],
+      enum: ['STUDENT', 'PHD', 'PROFESSOR', 'INDUSTRY', 'INDEPENDENT', 'RESEARCHER'],
       default: 'STUDENT'
     },
     primaryDomain: {
       type: String,
-      default: '💻 Software & Distributed Systems'
+      default: 'Software & Distributed Systems'
     },
     targetVenuePreference: { type: String, default: 'IEEE Conference' },
     techStack: [{ type: String }],

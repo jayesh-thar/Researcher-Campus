@@ -1,4 +1,4 @@
-# Dependencies & Build Outputs
+﻿# Dependencies & Build Outputs
 node_modules/
 .next/
 dist/
@@ -37,5 +37,6 @@ reports/
 understanding/
 EXTRA/
 plan.md
-bugs_and_improvements/
 DEPLOYMENT.md
+FIX_AND_BUG_AUDIT.md
+bugs_and_improvements/

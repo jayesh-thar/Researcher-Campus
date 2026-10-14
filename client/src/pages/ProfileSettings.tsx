@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   User as UserIcon, Settings, ShieldCheck, Cloud, LogOut, 
@@ -23,7 +23,7 @@ export function ProfileSettings() {
   const [name, setName] = useState<string>('Dr. John Doe');
   const [email, setEmail] = useState<string>('john@university.edu');
   const [persona, setPersona] = useState<string>('PHD');
-  const [primaryDomain, setPrimaryDomain] = useState<string>('💻 Software & Distributed Systems');
+  const [primaryDomain, setPrimaryDomain] = useState<string>('ðŸ’» Software & Distributed Systems');
   const [venuePreference, setVenuePreference] = useState<string>('IEEE Conference');
   const [isDriveConnected, setIsDriveConnected] = useState<boolean>(true);
   const [newPassword, setNewPassword] = useState<string>('');
@@ -37,7 +37,7 @@ export function ProfileSettings() {
         setName(u.name || 'Academic Researcher');
         setEmail(u.email || '');
         setPersona(u.persona || 'PHD');
-        setPrimaryDomain(u.primaryDomain || '💻 Software & Distributed Systems');
+        setPrimaryDomain(u.primaryDomain || 'ðŸ’» Software & Distributed Systems');
         setVenuePreference(u.targetVenuePreference || 'IEEE Conference');
         setIsDriveConnected(u.googleDrive?.isConnected ?? true);
       }
@@ -194,6 +194,7 @@ export function ProfileSettings() {
                     onChange={(e) => setPersona(e.target.value)}
                     className="bg-white border border-slate-300 rounded px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-navy-600"
                   >
+                    <option value="RESEARCHER">Academic Researcher</option>
                     <option value="STUDENT">Undergraduate Student</option>
                     <option value="PHD">PhD Candidate / Master Researcher</option>
                     <option value="PROFESSOR">Professor / Lab Director</option>
@@ -211,11 +212,11 @@ export function ProfileSettings() {
                     onChange={(e) => setPrimaryDomain(e.target.value)}
                     className="bg-white border border-slate-300 rounded px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-navy-600"
                   >
-                    <option>💻 Software & Distributed Systems</option>
-                    <option>🧠 Artificial Intelligence & Machine Learning</option>
-                    <option>🛡️ Cybersecurity & Privacy</option>
-                    <option>🧬 Biomedical & Healthcare Informatics</option>
-                    <option>📚 Education & Social Computing</option>
+                    <option>ðŸ’» Software & Distributed Systems</option>
+                    <option>ðŸ§  Artificial Intelligence & Machine Learning</option>
+                    <option>ðŸ›¡ï¸ Cybersecurity & Privacy</option>
+                    <option>ðŸ§¬ Biomedical & Healthcare Informatics</option>
+                    <option>ðŸ“š Education & Social Computing</option>
                   </select>
                 </div>
               </div>
@@ -238,9 +239,9 @@ export function ProfileSettings() {
                 <h3 className="font-bold text-slate-900 text-sm">Google Drive Cloud Storage Status</h3>
               </div>
               {isDriveConnected ? (
-                <Badge variant="pass">🟢 Connected & Synced</Badge>
+                <Badge variant="pass">ðŸŸ¢ Connected & Synced</Badge>
               ) : (
-                <Badge variant="stop">🔴 Disconnected</Badge>
+                <Badge variant="stop">ðŸ”´ Disconnected</Badge>
               )}
             </div>
 
@@ -281,7 +282,7 @@ export function ProfileSettings() {
                 <Input
                   type="password"
                   label="New Password"
-                  placeholder="••••••••"
+                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                 />
@@ -289,8 +290,8 @@ export function ProfileSettings() {
 
               <div className="bg-slate-50 border border-slate-200 p-3 rounded text-xs space-y-1 font-mono text-slate-600">
                 <div className="font-bold text-slate-900">Active Token Session Info:</div>
-                <div>• Access Token: 15-Minute Expiry (In-Memory)</div>
-                <div>• Refresh Token: 7-Day Max Session Expiry (httpOnly Cookie)</div>
+                <div>â€¢ Access Token: 15-Minute Expiry (In-Memory)</div>
+                <div>â€¢ Refresh Token: 7-Day Max Session Expiry (httpOnly Cookie)</div>
               </div>
 
               <div className="flex items-center justify-between pt-2 border-t border-slate-100">
@@ -308,3 +309,4 @@ export function ProfileSettings() {
     </div>
   );
 }
+
