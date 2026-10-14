@@ -1,4 +1,4 @@
-import { ILiteratureItem } from '../models/Project';
+﻿import { ILiteratureItem } from '../models/Project';
 import { generateDynamicLiterature, getGenAIClient } from './geminiService';
 
 export interface GateScanResult {
@@ -325,7 +325,7 @@ export async function calculateLiveEmbeddingSimilarity(textA: string, textB: str
   const client = getGenAIClient();
   if (client) {
     try {
-      const embeddingModel = client.getGenerativeModel({ model: 'text-embedding-004' });
+      const embeddingModel = client.getGenerativeModel({ model: 'gemini-embedding-001' });
       const [embA, embB] = await Promise.all([
         embeddingModel.embedContent(textA.slice(0, 1000)),
         embeddingModel.embedContent(textB.slice(0, 1000))
@@ -409,13 +409,17 @@ export async function executeMultiEngineLiteratureScan(
   // Select top candidate papers (up to 4)
   const candidateSelection = uniquePapers.slice(0, 4);
 
-  // Compute mathematical vector cosine similarity for each baseline against the user's methodology
+  // Compute mathematical vector cosine similarity concurrently across all candidate papers
+  const similarities = await Promise.all(
+    candidateSelection.map((p) => calculateLiveEmbeddingSimilarity(methodologyOverview, p.abstract))
+  );
+
   let maxOverlap = 0;
   const processedLiterature: ILiteratureItem[] = [];
 
   for (let idx = 0; idx < candidateSelection.length; idx++) {
     const paper = candidateSelection[idx];
-    const similarity = await calculateLiveEmbeddingSimilarity(methodologyOverview, paper.abstract);
+    const similarity = similarities[idx] || 0;
     if (similarity > maxOverlap) maxOverlap = similarity;
 
     const category: 'BASELINE' | 'COMPETITOR' | 'REFERENCE' =
@@ -476,3 +480,4 @@ export async function executeMultiEngineLiteratureScan(
     }
   };
 }
+
