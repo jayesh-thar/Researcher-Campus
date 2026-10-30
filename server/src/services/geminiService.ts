@@ -78,10 +78,9 @@ async function generateWithModelFallback(prompt: string, isJson: boolean = true)
 
   // Active Google Gemini model tiers (Gemini 2.5 Flash, 3.7 Flash, 2.5 Pro, 2.5 Flash-Lite, 2.0 Flash)
   const candidateModels = [
+    'gemini-3.8-flash',
     'gemini-3.5-flash-lite',
     'gemini-3.5-flash',
-    'gemini-flash-latest',
-    'gemini-3.8-flash'
   ];
   for (const modelName of candidateModels) {
     try {
