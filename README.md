@@ -45,8 +45,8 @@ For decades, graduate students, academic researchers, and computer scientists ha
 │ reformulation.    │ Gate verdict &    │ competitor matrix │ conversational AI │ live IEEE preview &     │
 │                   │ Drive doc report. │ & BibTeX export.  │ & tool scout hub. │ LaTeX math exporter.    │
 ├───────────────────┴───────────────────┴───────────────────┴───────────────────┴─────────────────────────┤
-│ Stage 6: AI Pre-Flight Audit ➔ Stage 7: Target Venue Matcher & Submission Package (.zip)              │
-│ 4 compliance guards, live paper editing ➔ Live conference directory, countdowns & final submission .zip.│
+│ Stage 6: AI Pre-Flight Audit ➔ Stage 7: Target Venue Matcher & Submission Package (.zip)               │
+│ 4 compliance guards, live paper editing ➔ Live conference directory, countdowns & final submission .zip│
 └─────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 

@@ -32,11 +32,4 @@ Thumbs.db
 .idea/
 
 # Developer Scratch Directories
-implementation/
-reports/
-understanding/
 EXTRA/
-plan.md
-DEPLOYMENT.md
-FIX_AND_BUG_AUDIT.md
-bugs_and_improvements/
