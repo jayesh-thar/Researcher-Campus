@@ -59,6 +59,8 @@ export function Roadmap() {
         setChecklist(r.checklist || []);
       }
       setReadinessPercent(response.data.readinessPercent || 0);
+      // Advance stage to 4 (idempotent — $max never goes back)
+      await api.put(`/project/${id || 'demo'}/stage`, { stage: 4 });
     } catch (err) {
       console.error('Fetch roadmap error:', err);
     } finally {

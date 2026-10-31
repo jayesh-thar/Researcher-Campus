@@ -38,8 +38,9 @@ export function PaperStudio() {
         const p = response.data.project;
         if (p) {
           setProjectTitle(p.academicTitle || p.title || 'Academic Manuscript');
-          if (p.documentMarkdown && p.documentMarkdown.trim().length > 30) {
-            setMarkdown(p.documentMarkdown);
+          // FIX: read from correct nested path p.document.contentMarkdown
+          if (p.document?.contentMarkdown && p.document.contentMarkdown.trim().length > 30) {
+            setMarkdown(p.document.contentMarkdown);
           } else {
             // Generate tailored initial draft from real project data
             const title = p.academicTitle || p.title || 'Novel Computational Methodology';
@@ -86,17 +87,19 @@ Our findings substantiate the critical impact of feature interaction modeling an
 
   const handleSaveDocument = async () => {
     setIsSaving(true);
-    setSyncStatus('Saving to MongoDB & Drive...');
+    setSyncStatus('Saving to MongoDB...');
     try {
       await api.put(`/project/${id || 'demo'}/document`, {
         template,
         contentMarkdown: markdown
       });
+      // Advance stage to 5 (idempotent — $max never goes back)
+      await api.put(`/project/${id || 'demo'}/stage`, { stage: 5 });
       setIsSaving(false);
-      setSyncStatus('Synced to Drive (Just now)');
+      setSyncStatus('Saved (Just now)');
     } catch {
       setIsSaving(false);
-      setSyncStatus('Saved to MongoDB Session');
+      setSyncStatus('Saved to Session');
     }
   };
 

@@ -118,9 +118,11 @@ router.post('/project/:id/audit/fix', requireAuth, async (req: AuthenticatedRequ
     // Apply 1-Click AI Auto-Fixes
     let text = project.document?.contentMarkdown || '';
     text = text.replace(/John Doe/gi, 'Anonymized Author');
-    text.replace(/a lot of/gi, 'substantial');
-    text.replace(/cool/gi, 'effective');
-    text.replace(/awesome/gi, 'robust');
+    text = text.replace(/a lot of/gi, 'substantial');
+    text = text.replace(/cool/gi, 'effective');
+    text = text.replace(/awesome/gi, 'robust');
+    text = text.replace(/basically/gi, 'fundamentally');
+    text = text.replace(/kind of/gi, 'effectively');
 
     if (project.document) {
       project.document.contentMarkdown = text;
