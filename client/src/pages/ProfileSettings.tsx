@@ -1,8 +1,8 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   User as UserIcon, Settings, ShieldCheck, Cloud, LogOut, 
-  Save, RefreshCw, Key, Cpu, CheckCircle2, AlertCircle
+  Save, RefreshCw, Key, Cpu, CheckCircle2, AlertCircle, Code2, Plus, X
 } from 'lucide-react';
 import { Navbar } from '../components/layout/Navbar';
 import { Card } from '../components/ui/Card';
@@ -12,6 +12,18 @@ import { Badge } from '../components/ui/Badge';
 import { Skeleton } from '../components/ui/Skeleton';
 import { api } from '../services/api';
 
+const DOMAINS = [
+  '💻 Software & Distributed Systems',
+  '🧠 Artificial Intelligence & Machine Learning',
+  '🏥 Healthcare & Clinical Informatics',
+  '🔒 Cybersecurity & Privacy',
+  '🌐 Networks, IoT & Cloud Computing',
+  '💬 NLP & Large Language Models',
+  '👁️ Computer Vision & Multimedia',
+  '⚛️ Quantum Computing & Algorithms',
+  '🔬 Bio-informatics & Computational Biology'
+];
+
 export function ProfileSettings() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(true);
@@ -20,12 +32,14 @@ export function ProfileSettings() {
   const [userMsg, setUserMsg] = useState<string | null>(null);
 
   // User State
-  const [name, setName] = useState<string>('Dr. John Doe');
-  const [email, setEmail] = useState<string>('john@university.edu');
-  const [persona, setPersona] = useState<string>('PHD');
-  const [primaryDomain, setPrimaryDomain] = useState<string>('ðŸ’» Software & Distributed Systems');
-  const [venuePreference, setVenuePreference] = useState<string>('IEEE Conference');
-  const [isDriveConnected, setIsDriveConnected] = useState<boolean>(true);
+  const [name, setName] = useState<string>('Academic Researcher');
+  const [email, setEmail] = useState<string>('');
+  const [persona, setPersona] = useState<string>('RESEARCHER');
+  const [primaryDomain, setPrimaryDomain] = useState<string>('💻 Software & Distributed Systems');
+  const [venuePreference, setVenuePreference] = useState<string>('Peer-Reviewed Conference');
+  const [techStack, setTechStack] = useState<string[]>([]);
+  const [newSkillInput, setNewSkillInput] = useState<string>('');
+  const [isDriveConnected, setIsDriveConnected] = useState<boolean>(false);
   const [newPassword, setNewPassword] = useState<string>('');
 
   const fetchUserProfile = async () => {
@@ -36,10 +50,18 @@ export function ProfileSettings() {
       if (u) {
         setName(u.name || 'Academic Researcher');
         setEmail(u.email || '');
-        setPersona(u.persona || 'PHD');
-        setPrimaryDomain(u.primaryDomain || 'ðŸ’» Software & Distributed Systems');
-        setVenuePreference(u.targetVenuePreference || 'IEEE Conference');
-        setIsDriveConnected(u.googleDrive?.isConnected ?? true);
+        setPersona(u.persona || 'RESEARCHER');
+        setPrimaryDomain(u.primaryDomain || '💻 Software & Distributed Systems');
+        
+        if (typeof u.targetVenuePreference === 'object' && u.targetVenuePreference) {
+          const vp = u.targetVenuePreference;
+          setVenuePreference(`${vp.venueType || 'Conference'} - ${vp.state || 'Any'}`);
+        } else {
+          setVenuePreference(u.targetVenuePreference || 'Peer-Reviewed Conference');
+        }
+
+        setTechStack(Array.isArray(u.techStack) ? u.techStack : []);
+        setIsDriveConnected(u.googleDriveConnected ?? u.googleDrive?.isConnected ?? false);
       }
       setLoading(false);
     } catch (err) {
@@ -52,18 +74,36 @@ export function ProfileSettings() {
     fetchUserProfile();
   }, []);
 
+  const handleAddSkill = () => {
+    const s = newSkillInput.trim();
+    if (s && !techStack.includes(s)) {
+      setTechStack([...techStack, s]);
+    }
+    setNewSkillInput('');
+  };
+
+  const handleRemoveSkill = (skill: string) => {
+    setTechStack(techStack.filter((s) => s !== skill));
+  };
+
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setUserMsg(null);
     try {
-      await api.put('/user/settings', {
+      const response = await api.put('/user/settings', {
         name,
         persona,
         primaryDomain,
         targetVenuePreference: venuePreference,
+        techStack,
         newPassword: newPassword || undefined
       });
+
+      if (response.data.user) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+      }
+
       setUserMsg('Settings saved successfully!');
       setNewPassword('');
       setSaving(false);
@@ -95,6 +135,7 @@ export function ProfileSettings() {
 
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('user');
     api.post('/auth/logout').catch(() => {});
     navigate('/login');
   };
@@ -120,13 +161,12 @@ export function ProfileSettings() {
               </div>
             </div>
 
-            {/* Quota Usage Badge */}
             <div className="bg-slate-50 border border-slate-200 px-4 py-2 rounded text-xs space-y-1">
               <div className="flex items-center space-x-2 text-slate-700 font-medium">
                 <Cpu className="w-3.5 h-3.5 text-navy-800" />
-                <span>Monthly AI Request Quota:</span>
+                <span>AI Operating System:</span>
               </div>
-              <div className="font-mono font-bold text-slate-900 text-sm">42 / 100 requests used</div>
+              <div className="font-mono font-bold text-slate-900 text-xs">Researcher Campus OS v1.0</div>
             </div>
           </div>
         </Card>
@@ -163,10 +203,11 @@ export function ProfileSettings() {
                 : 'border-transparent text-slate-500 hover:text-slate-700'
             }`}
           >
-            Security & Password
+            Password & Security
           </button>
         </div>
 
+        {/* Status Message */}
         {userMsg && (
           <div className="bg-emerald-50 border border-emerald-200 rounded p-3 text-xs text-emerald-800 flex items-center space-x-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -192,11 +233,11 @@ export function ProfileSettings() {
                   <select
                     value={persona}
                     onChange={(e) => setPersona(e.target.value)}
-                    className="bg-white border border-slate-300 rounded px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-navy-600"
+                    className="bg-white border border-slate-300 rounded px-3 py-2 text-slate-800 focus:outline-none focus:ring-1 focus:ring-navy-800"
                   >
-                    <option value="RESEARCHER">Academic Researcher</option>
-                    <option value="STUDENT">Undergraduate Student</option>
-                    <option value="PHD">PhD Candidate / Master Researcher</option>
+                    <option value="RESEARCHER">Academic Researcher / Fellow</option>
+                    <option value="STUDENT">Undergraduate / Master's Student</option>
+                    <option value="PHD">PhD Candidate / Doctoral Scholar</option>
                     <option value="PROFESSOR">Professor / Lab Director</option>
                     <option value="INDUSTRY">Industry R&D Scientist</option>
                     <option value="INDEPENDENT">Independent Researcher</option>
@@ -210,14 +251,57 @@ export function ProfileSettings() {
                   <select
                     value={primaryDomain}
                     onChange={(e) => setPrimaryDomain(e.target.value)}
-                    className="bg-white border border-slate-300 rounded px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-navy-600"
+                    className="bg-white border border-slate-300 rounded px-3 py-2 text-slate-800 focus:outline-none focus:ring-1 focus:ring-navy-800"
                   >
-                    <option>ðŸ’» Software & Distributed Systems</option>
-                    <option>ðŸ§  Artificial Intelligence & Machine Learning</option>
-                    <option>ðŸ›¡ï¸ Cybersecurity & Privacy</option>
-                    <option>ðŸ§¬ Biomedical & Healthcare Informatics</option>
-                    <option>ðŸ“š Education & Social Computing</option>
+                    {DOMAINS.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
                   </select>
+                </div>
+              </div>
+
+              {/* Tech Stack Skills */}
+              <div className="space-y-2 pt-2 border-t border-slate-100">
+                <label className="block text-xs font-semibold text-slate-700">
+                  Tech Stack & Methodological Skills:
+                </label>
+                <div className="flex flex-wrap gap-1.5 min-h-[32px]">
+                  {techStack.map((skill) => (
+                    <span
+                      key={skill}
+                      className="inline-flex items-center space-x-1 bg-navy-800 text-white text-xs px-2.5 py-0.5 rounded"
+                    >
+                      <span>{skill}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSkill(skill)}
+                        className="hover:text-red-300 ml-1"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+
+                <div className="flex items-center space-x-2 pt-1">
+                  <input
+                    type="text"
+                    placeholder="Add a new skill (e.g. PyTorch, Docker)..."
+                    value={newSkillInput}
+                    onChange={(e) => setNewSkillInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddSkill();
+                      }
+                    }}
+                    className="text-xs border border-slate-300 rounded px-3 py-1.5 flex-1 focus:outline-none focus:ring-1 focus:ring-navy-800"
+                  />
+                  <Button type="button" size="sm" variant="outline" onClick={handleAddSkill}>
+                    <Plus className="w-3.5 h-3.5 mr-1" /> Add
+                  </Button>
                 </div>
               </div>
 
@@ -239,14 +323,14 @@ export function ProfileSettings() {
                 <h3 className="font-bold text-slate-900 text-sm">Google Drive Cloud Storage Status</h3>
               </div>
               {isDriveConnected ? (
-                <Badge variant="pass">ðŸŸ¢ Connected & Synced</Badge>
+                <Badge variant="pass">🟢 Connected & Synced</Badge>
               ) : (
-                <Badge variant="stop">ðŸ”´ Disconnected</Badge>
+                <Badge variant="stop">🔴 Disconnected</Badge>
               )}
             </div>
 
             <p className="text-xs text-slate-600 leading-relaxed">
-              When enabled, your paper drafts, KaTeX math blocks, and LaTeX `.tex` archives automatically sync to your personal Google Drive folder every 30 seconds.
+              When enabled, your paper drafts, KaTeX math blocks, and LaTeX `.tex` archives can be synced to your Google Drive during export.
             </p>
 
             <div className="pt-2">
@@ -261,44 +345,40 @@ export function ProfileSettings() {
                 </Button>
               ) : (
                 <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => handleToggleDrive(true)}
                   isLoading={saving}
                   leftIcon={<Cloud className="w-4 h-4" />}
                 >
-                  Connect Google Drive Account
+                  Connect Google Drive Workspace
                 </Button>
               )}
             </div>
           </Card>
         )}
 
-        {/* TAB 3: SECURITY & PASSWORD */}
+        {/* TAB 3: PASSWORD & SECURITY */}
         {activeTab === 'SECURITY' && (
           <Card className="space-y-4">
             <form onSubmit={handleSaveSettings} className="space-y-4">
-              <div className="space-y-2">
-                <h3 className="font-bold text-slate-900 text-sm">Change Password</h3>
-                <Input
-                  type="password"
-                  label="New Password"
-                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                />
+              <div>
+                <h3 className="font-bold text-slate-900 text-sm mb-1">Update Account Password</h3>
+                <p className="text-xs text-slate-500">
+                  Enter a new password to update your local account credentials.
+                </p>
               </div>
 
-              <div className="bg-slate-50 border border-slate-200 p-3 rounded text-xs space-y-1 font-mono text-slate-600">
-                <div className="font-bold text-slate-900">Active Token Session Info:</div>
-                <div>â€¢ Access Token: 15-Minute Expiry (In-Memory)</div>
-                <div>â€¢ Refresh Token: 7-Day Max Session Expiry (httpOnly Cookie)</div>
-              </div>
+              <Input
+                label="New Password"
+                type="password"
+                placeholder="••••••••••••"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
 
-              <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                <Button variant="danger" size="sm" type="button" onClick={handleLogout} leftIcon={<LogOut className="w-3.5 h-3.5" />}>
-                  Sign Out
-                </Button>
-                <Button type="submit" isLoading={saving} leftIcon={<Save className="w-4 h-4" />}>
+              <div className="flex justify-end pt-2 border-t border-slate-100">
+                <Button type="submit" isLoading={saving} leftIcon={<Key className="w-4 h-4" />}>
                   Update Password
                 </Button>
               </div>
@@ -309,4 +389,3 @@ export function ProfileSettings() {
     </div>
   );
 }
-

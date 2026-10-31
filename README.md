@@ -3,7 +3,7 @@
 
 [![Production Status](https://img.shields.io/badge/Status-Production%20v1.0.0.0-1E3A8A?style=for-the-badge&logo=shield)](https://github.com/jayesh-thar/Researcher-Campus)
 [![MERN Stack](https://img.shields.io/badge/Stack-React%2018%20%7C%20Express%20%7C%20MongoDB%20Atlas-007ACC?style=for-the-badge&logo=react)](https://github.com/jayesh-thar/Researcher-Campus)
-[![AI Engine](https://img.shields.io/badge/AI%20Core-Google%20Gemini%202.0%20%2F%201.5%20Cascade-FF7043?style=for-the-badge&logo=google)](https://github.com/jayesh-thar/Researcher-Campus)
+[![AI Engine](https://img.shields.io/badge/AI%20Core-Google%20Gemini%203.8%20%2F%203.5%20Cascade-FF7043?style=for-the-badge&logo=google)](https://github.com/jayesh-thar/Researcher-Campus)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](https://github.com/jayesh-thar/Researcher-Campus/blob/main/LICENSE)
 
 ---
@@ -118,8 +118,8 @@ For decades, graduate students, academic researchers, and computer scientists ha
 ├───────────────────┼─────────────────────────────────────────────────────────┤
 │ Database          │ MongoDB Atlas (Users & Projects Collections)            │
 ├───────────────────┼─────────────────────────────────────────────────────────┤
-│ AI Engine         │ Google Gemini Pro Cascade (2.0-Flash ➔ 1.5-Flash ➔     │
-│                   │ 1.5-Pro ➔ 3.7-Flash ➔ Domain Heuristics)                │
+│ AI Engine         │ Google Gemini Cascade (3.8-Flash ➔ 3.5-Flash-Lite ➔     │
+│                   │ 3.5-Flash ➔ 2.0-Flash ➔ Domain Heuristics)              │
 ├───────────────────┼─────────────────────────────────────────────────────────┤
 │ Academic APIs     │ Crossref • arXiv • OpenAlex • Semantic Scholar • Europe |
 └───────────────────┴─────────────────────────────────────────────────────────┘

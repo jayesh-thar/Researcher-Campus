@@ -1,4 +1,11 @@
-﻿import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
+
+export interface ITargetVenuePreference {
+  venueType: string;
+  state: string;
+  cities: string[];
+  includeOutsideState: boolean;
+}
 
 export interface IUser extends Document {
   name: string;
@@ -8,15 +15,9 @@ export interface IUser extends Document {
   avatarUrl?: string;
   persona: 'STUDENT' | 'PHD' | 'PROFESSOR' | 'INDUSTRY' | 'INDEPENDENT' | 'RESEARCHER';
   primaryDomain: string;
-  targetVenuePreference?: string;
+  targetVenuePreference?: ITargetVenuePreference | string;
   techStack?: string[];
   isCompletedOnboarding: boolean;
-  subscription: {
-    plan: 'FREE' | 'PRO' | 'INSTITUTION';
-    monthlyQuota: number;
-    usedThisMonth: number;
-    resetDate: Date;
-  };
   googleDrive: {
     isConnected: boolean;
     encryptedRefreshToken?: string;
@@ -37,21 +38,23 @@ const UserSchema: Schema = new Schema<IUser>(
     persona: {
       type: String,
       enum: ['STUDENT', 'PHD', 'PROFESSOR', 'INDUSTRY', 'INDEPENDENT', 'RESEARCHER'],
-      default: 'STUDENT'
+      default: 'RESEARCHER'
     },
     primaryDomain: {
       type: String,
-      default: 'Software & Distributed Systems'
+      default: '💻 Software & Distributed Systems'
     },
-    targetVenuePreference: { type: String, default: 'IEEE Conference' },
-    techStack: [{ type: String }],
+    targetVenuePreference: {
+      type: Schema.Types.Mixed,
+      default: () => ({
+        venueType: 'Peer-Reviewed Conference',
+        state: 'Any',
+        cities: ['Any'],
+        includeOutsideState: true
+      })
+    },
+    techStack: [{ type: String, trim: true }],
     isCompletedOnboarding: { type: Boolean, default: false },
-    subscription: {
-      plan: { type: String, enum: ['FREE', 'PRO', 'INSTITUTION'], default: 'FREE' },
-      monthlyQuota: { type: Number, default: 100 },
-      usedThisMonth: { type: Number, default: 0 },
-      resetDate: { type: Date, default: Date.now }
-    },
     googleDrive: {
       isConnected: { type: Boolean, default: false },
       encryptedRefreshToken: { type: String },
