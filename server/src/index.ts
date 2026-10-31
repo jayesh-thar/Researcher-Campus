@@ -50,7 +50,6 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/user', authRoutes);
 app.use('/api/ai', aiRoutes);
-app.use('/api/literature', literatureRoutes);
 app.use('/api', literatureRoutes);
 app.use('/api', roadmapRoutes);
 app.use('/api', driveRoutes);

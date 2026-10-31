@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
 import { Dashboard } from './pages/Dashboard';
 import { IdeaLab } from './pages/IdeaLab';
 import { GateReport } from './pages/GateReport';
@@ -17,103 +18,105 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 export function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
-        
-        {/* Protected Routes — Require Authentication */}
-        <Route
-          path="/onboarding"
-          element={
-            <ProtectedRoute>
-              <Onboarding />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <ProfileSettings />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/project/new"
-          element={
-            <ProtectedRoute>
-              <IdeaLab />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/project/:id/report"
-          element={
-            <ProtectedRoute>
-              <GateReport />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/project/:id/whitespace"
-          element={
-            <ProtectedRoute>
-              <WhitespaceBoard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/project/:id/literature"
-          element={
-            <ProtectedRoute>
-              <WhitespaceBoard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/project/:id/roadmap"
-          element={
-            <ProtectedRoute>
-              <Roadmap />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/project/:id/editor"
-          element={
-            <ProtectedRoute>
-              <PaperStudio />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/project/:id/audit"
-          element={
-            <ProtectedRoute>
-              <PreFlightAudit />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/project/:id/venues"
-          element={
-            <ProtectedRoute>
-              <VenueMatcher />
-            </ProtectedRoute>
-          }
-        />
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
+          
+          {/* Protected Routes — Require Authentication */}
+          <Route
+            path="/onboarding"
+            element={
+              <ProtectedRoute>
+                <Onboarding />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfileSettings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/project/new"
+            element={
+              <ProtectedRoute>
+                <IdeaLab />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/project/:id/report"
+            element={
+              <ProtectedRoute>
+                <GateReport />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/project/:id/whitespace"
+            element={
+              <ProtectedRoute>
+                <WhitespaceBoard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/project/:id/literature"
+            element={
+              <ProtectedRoute>
+                <WhitespaceBoard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/project/:id/roadmap"
+            element={
+              <ProtectedRoute>
+                <Roadmap />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/project/:id/editor"
+            element={
+              <ProtectedRoute>
+                <PaperStudio />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/project/:id/audit"
+            element={
+              <ProtectedRoute>
+                <PreFlightAudit />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/project/:id/venues"
+            element={
+              <ProtectedRoute>
+                <VenueMatcher />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* Fallback route for unmatched URLs */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
+          {/* Fallback route for unmatched URLs */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

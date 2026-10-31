@@ -17,8 +17,8 @@ router.get('/projects', requireAuth, async (req: AuthenticatedRequest, res: Resp
   }
 });
 
-// POST /api/literature/scan
-router.post('/scan', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+// POST /api/literature/scan & POST /api/scan
+const handleLiteratureScan = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { projectId, academicTitle, problemStatement, methodologyOverview } = req.body;
 
@@ -58,7 +58,10 @@ router.post('/scan', requireAuth, async (req: AuthenticatedRequest, res: Respons
     console.error('Literature scan route error:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
-});
+};
+
+router.post('/literature/scan', requireAuth, handleLiteratureScan);
+router.post('/scan', requireAuth, handleLiteratureScan);
 
 // GET /api/project/:id/gaps - Synthesize research gaps and opportunities
 router.get('/project/:id/gaps', requireAuth, async (req: AuthenticatedRequest, res: Response) => {

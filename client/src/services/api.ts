@@ -35,31 +35,77 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Response Interceptor: Handle 401 and attempt automatic token refresh
+// Concurrency-safe Token Refresh Queue
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (token: string) => void;
+  reject: (error: any) => void;
+}> = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else if (token) {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+// Response Interceptor: Queue 401s and refresh seamlessly
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    if (error.response?.status === 401 && !originalRequest._retry) {
+
+    // Do not attempt refresh on auth endpoints (login, register, refresh)
+    const isAuthEndpoint = originalRequest.url?.includes('/auth/login') ||
+                           originalRequest.url?.includes('/auth/register') ||
+                           originalRequest.url?.includes('/auth/refresh');
+
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
+      if (isRefreshing) {
+        // If a refresh is already underway, wait for it
+        return new Promise<string>((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((newToken) => {
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            return api(originalRequest);
+          })
+          .catch((err) => Promise.reject(err));
+      }
+
       originalRequest._retry = true;
+      isRefreshing = true;
+
       try {
         const refreshResponse = await axios.post(
           `${API_BASE_URL}/auth/refresh`,
           {},
           { withCredentials: true }
         );
-        const newToken = refreshResponse.data.accessToken;
+        const newToken = refreshResponse.data?.accessToken;
         if (newToken) {
           setAccessToken(newToken);
+          processQueue(null, newToken);
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
           return api(originalRequest);
+        } else {
+          throw new Error('No access token returned from refresh');
         }
       } catch (refreshError) {
-        console.warn('Session expired. Redirecting to login...');
-        localStorage.removeItem('accessToken');
+        processQueue(refreshError, null);
+        console.warn('[Session] Refresh failed. Session expired.');
+        setAccessToken(null);
         localStorage.removeItem('user');
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
+
     return Promise.reject(error);
   }
 );

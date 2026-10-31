@@ -10,6 +10,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
 import { api } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const POPULAR_STATES: Record<string, string[]> = {
   'California': ['San Francisco', 'Los Angeles', 'San Diego', 'San Jose', 'Palo Alto'],
@@ -44,6 +45,7 @@ const DOMAINS = [
 
 export function Onboarding() {
   const navigate = useNavigate();
+  const { updateUser } = useAuth();
 
   // If user has already completed onboarding, redirect straight to dashboard
   useEffect(() => {
@@ -139,7 +141,7 @@ export function Onboarding() {
       });
 
       if (response.data.user) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+        updateUser(response.data.user);
       }
       navigate('/dashboard');
     } catch (err: any) {

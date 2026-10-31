@@ -11,6 +11,7 @@ import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
 import { Skeleton } from '../components/ui/Skeleton';
 import { api } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const DOMAINS = [
   '💻 Software & Distributed Systems',
@@ -26,6 +27,7 @@ const DOMAINS = [
 
 export function ProfileSettings() {
   const navigate = useNavigate();
+  const { updateUser, logout } = useAuth();
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'PROFILE' | 'DRIVE' | 'SECURITY'>('PROFILE');
@@ -101,7 +103,7 @@ export function ProfileSettings() {
       });
 
       if (response.data.user) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+        updateUser(response.data.user);
       }
 
       setUserMsg('Settings saved successfully!');
@@ -133,10 +135,8 @@ export function ProfileSettings() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('user');
-    api.post('/auth/logout').catch(() => {});
+  const handleLogout = async () => {
+    await logout();
     navigate('/login');
   };
 
