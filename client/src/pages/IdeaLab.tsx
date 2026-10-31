@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, CheckCircle2, ArrowRight, Activity, Plus, X } from 'lucide-react';
+import { Sparkles, CheckCircle2, ArrowRight, Activity, Plus, X, Loader2 } from 'lucide-react';
 import { Navbar } from '../components/layout/Navbar';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -14,6 +14,7 @@ export function IdeaLab() {
   const [projectTitle, setProjectTitle] = useState<string>('');
   const [rawInput, setRawInput] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
+  const [loadingMessage, setLoadingMessage] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
   // Gemini AI Reformulation State
@@ -37,6 +38,8 @@ export function IdeaLab() {
     }
     setError(null);
     setLoading(true);
+    setLoadingMessage('Gemini AI is analyzing your research idea, extracting formal methodology, and formulating statistical benchmark metrics...');
+
     try {
       const response = await api.post('/ai/reformulate', {
         rawInput,
@@ -53,6 +56,7 @@ export function IdeaLab() {
       setError('Failed to refine with AI. You can still proceed directly to Stage 2.');
     } finally {
       setLoading(false);
+      setLoadingMessage('');
     }
   };
 
@@ -62,6 +66,8 @@ export function IdeaLab() {
       return;
     }
     setLoading(true);
+    setLoadingMessage('Initializing project workspace and saving research specification to database...');
+
     try {
       const titleToSave = projectTitle.trim() || (reformulated ? reformulated.academicTitle : rawInput.slice(0, 50));
       const response = await api.post('/project/create', {
@@ -79,6 +85,7 @@ export function IdeaLab() {
       setError(err.response?.data?.error || 'Failed to initialize project in database.');
     } finally {
       setLoading(false);
+      setLoadingMessage('');
     }
   };
 
@@ -94,8 +101,28 @@ export function IdeaLab() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans relative">
       <Navbar />
+
+      {/* Transparent Loading Screen Overlay */}
+      {loading && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-2xl text-center space-y-4 border border-slate-200">
+            <div className="w-12 h-12 border-3 border-navy-800 border-t-transparent rounded-full animate-spin mx-auto" />
+            <div className="space-y-1.5">
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider font-mono">
+                Processing Academic Specification
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                {loadingMessage || 'Please wait while Researcher Campus executes your request...'}
+              </p>
+            </div>
+            <div className="text-[10px] font-mono text-slate-400 bg-slate-50 py-1.5 px-3 rounded border border-slate-100">
+              Inputs locked to prevent duplicate submissions
+            </div>
+          </div>
+        </div>
+      )}
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-6 py-8 flex flex-col space-y-6">
         {/* Header Title */}
@@ -114,6 +141,7 @@ export function IdeaLab() {
         {/* Dual Intake Mode Selector */}
         <div className="flex items-center space-x-3 bg-white p-1.5 border border-slate-200 rounded max-w-md">
           <button
+            disabled={loading}
             onClick={() => setIntakeMode('RAW')}
             className={`flex-1 py-1.5 px-3 rounded text-xs font-medium transition-colors ${
               intakeMode === 'RAW'
@@ -124,6 +152,7 @@ export function IdeaLab() {
             Mode A: Raw Idea (1–3 Sentences)
           </button>
           <button
+            disabled={loading}
             onClick={() => setIntakeMode('DRAFT')}
             className={`flex-1 py-1.5 px-3 rounded text-xs font-medium transition-colors ${
               intakeMode === 'DRAFT'
@@ -141,6 +170,7 @@ export function IdeaLab() {
             label="Project Title / Working Identifier"
             placeholder="e.g. Clinical Diabetes Prediction with LightGBM & SMOTE-Tomek"
             value={projectTitle}
+            disabled={loading}
             onChange={(e) => setProjectTitle(e.target.value)}
           />
 
@@ -151,13 +181,14 @@ export function IdeaLab() {
             <textarea
               rows={5}
               value={rawInput}
+              disabled={loading}
               onChange={(e) => setRawInput(e.target.value)}
               placeholder={
                 intakeMode === 'RAW'
                   ? 'e.g. I want to build a machine learning model to predict early diabetes in patients using LightGBM and SMOTE-Tomek to fix class imbalance...'
                   : 'Paste your experimental methodology, abstract, or draft paragraph here...'
               }
-              className="w-full bg-white border border-slate-300 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-navy-600 placeholder-slate-400 font-sans"
+              className="w-full bg-white border border-slate-300 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-navy-600 placeholder-slate-400 font-sans disabled:bg-slate-100 disabled:text-slate-400"
             />
           </div>
 
@@ -168,7 +199,8 @@ export function IdeaLab() {
               variant="secondary"
               size="md"
               onClick={() => handleCreateProject(false)}
-              isLoading={loading}
+              disabled={loading}
+              isLoading={loading && loadingMessage.includes('Initializing')}
               rightIcon={<ArrowRight className="w-4 h-4" />}
             >
               Proceed to Stage 2 with My Input
@@ -177,7 +209,8 @@ export function IdeaLab() {
             <Button
               size="md"
               onClick={handleReformulate}
-              isLoading={loading}
+              disabled={loading}
+              isLoading={loading && loadingMessage.includes('Gemini')}
               leftIcon={<Sparkles className="w-4 h-4" />}
             >
               Refine with AI Academic Formulation
@@ -213,9 +246,10 @@ export function IdeaLab() {
                 </span>
                 <input
                   type="text"
+                  disabled={loading}
                   value={reformulated.academicTitle}
                   onChange={(e) => setReformulated({ ...reformulated, academicTitle: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-300 rounded p-2 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-600"
+                  className="w-full bg-slate-50 border border-slate-300 rounded p-2 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-600 disabled:opacity-50"
                 />
               </div>
 
@@ -225,9 +259,10 @@ export function IdeaLab() {
                 </span>
                 <textarea
                   rows={3}
+                  disabled={loading}
                   value={reformulated.problemStatement}
                   onChange={(e) => setReformulated({ ...reformulated, problemStatement: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs text-slate-800 leading-relaxed focus:outline-none focus:ring-2 focus:ring-navy-600"
+                  className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs text-slate-800 leading-relaxed focus:outline-none focus:ring-2 focus:ring-navy-600 disabled:opacity-50"
                 />
               </div>
 
@@ -237,9 +272,10 @@ export function IdeaLab() {
                 </span>
                 <textarea
                   rows={3}
+                  disabled={loading}
                   value={reformulated.methodologyOverview}
                   onChange={(e) => setReformulated({ ...reformulated, methodologyOverview: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs text-slate-800 leading-relaxed focus:outline-none focus:ring-2 focus:ring-navy-600"
+                  className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs text-slate-800 leading-relaxed focus:outline-none focus:ring-2 focus:ring-navy-600 disabled:opacity-50"
                 />
               </div>
 
@@ -258,8 +294,9 @@ export function IdeaLab() {
                       <span>{metric}</span>
                       <button
                         type="button"
+                        disabled={loading}
                         onClick={() => handleRemoveMetric(metric)}
-                        className="text-navy-400 hover:text-red-600 ml-1"
+                        className="text-navy-400 hover:text-red-600 ml-1 disabled:opacity-50"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -270,13 +307,14 @@ export function IdeaLab() {
                 <div className="flex items-center space-x-2 max-w-sm">
                   <input
                     type="text"
+                    disabled={loading}
                     placeholder="Add custom evaluation metric..."
                     value={newMetricInput}
                     onChange={(e) => setNewMetricInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddMetric())}
-                    className="flex-1 bg-white border border-slate-300 rounded px-2.5 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-navy-600"
+                    className="flex-1 bg-white border border-slate-300 rounded px-2.5 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-navy-600 disabled:opacity-50"
                   />
-                  <Button size="sm" variant="secondary" onClick={handleAddMetric} leftIcon={<Plus className="w-3 h-3" />}>
+                  <Button size="sm" variant="secondary" disabled={loading} onClick={handleAddMetric} leftIcon={<Plus className="w-3 h-3" />}>
                     Add
                   </Button>
                 </div>
@@ -287,7 +325,8 @@ export function IdeaLab() {
               <Button
                 size="md"
                 onClick={() => handleCreateProject(true)}
-                isLoading={loading}
+                disabled={loading}
+                isLoading={loading && loadingMessage.includes('Initializing')}
                 rightIcon={<ArrowRight className="w-4 h-4" />}
               >
                 Proceed to Stage 2: Literature Gate Scan

@@ -21,6 +21,14 @@ export interface IRoadmapTask {
   userNotes?: string;
 }
 
+export interface IResearchGap {
+  id: string;
+  gapTitle: string;
+  currentLimitation: string;
+  proposedInnovation: string;
+  impactScore: number;
+}
+
 export interface IProject extends Document {
   _id: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
@@ -38,6 +46,7 @@ export interface IProject extends Document {
     remediationAngle?: string;
   };
   literature: ILiteratureItem[];
+  gaps: IResearchGap[];
   roadmap: {
     recommendedDatasets: Array<{ title: string; url: string; description: string }>;
     recommendedTools: Array<{ name: string; url: string; category: string }>;
