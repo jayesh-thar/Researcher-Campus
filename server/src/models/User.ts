@@ -16,7 +16,6 @@ export interface IUser extends Document {
   persona: 'STUDENT' | 'PHD' | 'PROFESSOR' | 'INDUSTRY' | 'INDEPENDENT' | 'RESEARCHER';
   primaryDomain: string;
   targetVenuePreference?: ITargetVenuePreference | string;
-  techStack?: string[];
   isCompletedOnboarding: boolean;
   googleDrive: {
     isConnected: boolean;
@@ -42,18 +41,17 @@ const UserSchema: Schema = new Schema<IUser>(
     },
     primaryDomain: {
       type: String,
-      default: '💻 Software & Distributed Systems'
+      default: '🧠 Artificial Intelligence & Machine Learning'
     },
     targetVenuePreference: {
       type: Schema.Types.Mixed,
       default: () => ({
-        venueType: 'Peer-Reviewed Conference',
-        state: 'Any',
-        cities: ['Any'],
+        venueType: 'Peer-Reviewed Conference (IEEE, ACM)',
+        state: 'All India',
+        cities: ['Any City'],
         includeOutsideState: true
       })
     },
-    techStack: [{ type: String, trim: true }],
     isCompletedOnboarding: { type: Boolean, default: false },
     googleDrive: {
       isConnected: { type: Boolean, default: false },

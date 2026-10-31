@@ -16,7 +16,6 @@ function formatUserResponse(user: IUser) {
     persona: user.persona,
     primaryDomain: user.primaryDomain,
     targetVenuePreference: user.targetVenuePreference,
-    techStack: user.techStack || [],
     isCompletedOnboarding: user.isCompletedOnboarding,
     googleDriveConnected: user.googleDrive?.isConnected ?? false
   };
@@ -25,7 +24,7 @@ function formatUserResponse(user: IUser) {
 // POST /api/auth/register
 router.post('/register', async (req: Request, res: Response) => {
   try {
-    const { name, email, password, persona, primaryDomain, targetVenuePreference, techStack } = req.body;
+    const { name, email, password, persona, primaryDomain, targetVenuePreference } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'Name, email, and password are required' });
@@ -44,14 +43,13 @@ router.post('/register', async (req: Request, res: Response) => {
       email,
       passwordHash,
       persona: persona || 'RESEARCHER',
-      primaryDomain: primaryDomain || '💻 Software & Distributed Systems',
+      primaryDomain: primaryDomain || '🧠 Artificial Intelligence & Machine Learning',
       targetVenuePreference: targetVenuePreference || {
-        venueType: 'Peer-Reviewed Conference',
-        state: 'Any',
-        cities: ['Any'],
+        venueType: 'Peer-Reviewed Conference (IEEE, ACM)',
+        state: 'All India',
+        cities: ['Any City'],
         includeOutsideState: true
       },
-      techStack: Array.isArray(techStack) ? techStack : [],
       isCompletedOnboarding: false
     });
 
@@ -134,14 +132,13 @@ router.post('/google', async (req: Request, res: Response) => {
         googleId: googleId || `google-${Date.now()}`,
         avatarUrl,
         persona: 'RESEARCHER',
-        primaryDomain: '💻 Software & Distributed Systems',
+        primaryDomain: '🧠 Artificial Intelligence & Machine Learning',
         targetVenuePreference: {
-          venueType: 'Peer-Reviewed Conference',
-          state: 'Any',
-          cities: ['Any'],
+          venueType: 'Peer-Reviewed Conference (IEEE, ACM)',
+          state: 'All India',
+          cities: ['Any City'],
           includeOutsideState: true
         },
-        techStack: [],
         isCompletedOnboarding: false
       });
     } else {
@@ -215,7 +212,7 @@ router.get('/profile', requireAuth, async (req: AuthenticatedRequest, res: Respo
 router.put('/onboarding', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.userId;
-    const { persona, primaryDomain, targetVenuePreference, techStack } = req.body;
+    const { persona, primaryDomain, targetVenuePreference } = req.body;
 
     const user = await User.findById(userId);
     if (!user) {
@@ -225,7 +222,6 @@ router.put('/onboarding', requireAuth, async (req: AuthenticatedRequest, res: Re
     if (persona) user.persona = persona;
     if (primaryDomain) user.primaryDomain = primaryDomain;
     if (targetVenuePreference !== undefined) user.targetVenuePreference = targetVenuePreference;
-    if (Array.isArray(techStack)) user.techStack = techStack;
     
     // Explicitly mark onboarding as complete
     user.isCompletedOnboarding = true;
@@ -246,7 +242,7 @@ router.put('/onboarding', requireAuth, async (req: AuthenticatedRequest, res: Re
 router.put('/settings', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.userId;
-    const { name, persona, primaryDomain, targetVenuePreference, techStack, disconnectDrive, newPassword } = req.body;
+    const { name, persona, primaryDomain, targetVenuePreference, disconnectDrive, newPassword } = req.body;
 
     const user = await User.findById(userId);
     if (!user) {
@@ -257,7 +253,6 @@ router.put('/settings', requireAuth, async (req: AuthenticatedRequest, res: Resp
     if (persona) user.persona = persona;
     if (primaryDomain) user.primaryDomain = primaryDomain;
     if (targetVenuePreference !== undefined) user.targetVenuePreference = targetVenuePreference;
-    if (Array.isArray(techStack)) user.techStack = techStack;
 
     if (disconnectDrive) {
       user.googleDrive.isConnected = false;

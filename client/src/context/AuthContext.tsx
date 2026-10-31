@@ -9,7 +9,6 @@ export interface UserProfile {
   persona?: string;
   primaryDomain?: string;
   targetVenuePreference?: any;
-  techStack?: string[];
   isCompletedOnboarding?: boolean;
   googleDriveConnected?: boolean;
 }

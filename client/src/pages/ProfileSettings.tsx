@@ -39,8 +39,6 @@ export function ProfileSettings() {
   const [persona, setPersona] = useState<string>('RESEARCHER');
   const [primaryDomain, setPrimaryDomain] = useState<string>('💻 Software & Distributed Systems');
   const [venuePreference, setVenuePreference] = useState<string>('Peer-Reviewed Conference');
-  const [techStack, setTechStack] = useState<string[]>([]);
-  const [newSkillInput, setNewSkillInput] = useState<string>('');
   const [isDriveConnected, setIsDriveConnected] = useState<boolean>(false);
   const [newPassword, setNewPassword] = useState<string>('');
 
@@ -62,7 +60,6 @@ export function ProfileSettings() {
           setVenuePreference(u.targetVenuePreference || 'Peer-Reviewed Conference');
         }
 
-        setTechStack(Array.isArray(u.techStack) ? u.techStack : []);
         setIsDriveConnected(u.googleDriveConnected ?? u.googleDrive?.isConnected ?? false);
       }
       setLoading(false);
@@ -76,18 +73,6 @@ export function ProfileSettings() {
     fetchUserProfile();
   }, []);
 
-  const handleAddSkill = () => {
-    const s = newSkillInput.trim();
-    if (s && !techStack.includes(s)) {
-      setTechStack([...techStack, s]);
-    }
-    setNewSkillInput('');
-  };
-
-  const handleRemoveSkill = (skill: string) => {
-    setTechStack(techStack.filter((s) => s !== skill));
-  };
-
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -98,7 +83,6 @@ export function ProfileSettings() {
         persona,
         primaryDomain,
         targetVenuePreference: venuePreference,
-        techStack,
         newPassword: newPassword || undefined
       });
 
@@ -259,49 +243,6 @@ export function ProfileSettings() {
                       </option>
                     ))}
                   </select>
-                </div>
-              </div>
-
-              {/* Tech Stack Skills */}
-              <div className="space-y-2 pt-2 border-t border-slate-100">
-                <label className="block text-xs font-semibold text-slate-700">
-                  Tech Stack & Methodological Skills:
-                </label>
-                <div className="flex flex-wrap gap-1.5 min-h-[32px]">
-                  {techStack.map((skill) => (
-                    <span
-                      key={skill}
-                      className="inline-flex items-center space-x-1 bg-navy-800 text-white text-xs px-2.5 py-0.5 rounded"
-                    >
-                      <span>{skill}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveSkill(skill)}
-                        className="hover:text-red-300 ml-1"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-
-                <div className="flex items-center space-x-2 pt-1">
-                  <input
-                    type="text"
-                    placeholder="Add a new skill (e.g. PyTorch, Docker)..."
-                    value={newSkillInput}
-                    onChange={(e) => setNewSkillInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleAddSkill();
-                      }
-                    }}
-                    className="text-xs border border-slate-300 rounded px-3 py-1.5 flex-1 focus:outline-none focus:ring-1 focus:ring-navy-800"
-                  />
-                  <Button type="button" size="sm" variant="outline" onClick={handleAddSkill}>
-                    <Plus className="w-3.5 h-3.5 mr-1" /> Add
-                  </Button>
                 </div>
               </div>
 

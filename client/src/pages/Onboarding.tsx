@@ -1,46 +1,70 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  GraduationCap, BookOpen, Building2, User, Search, Plus, X, 
-  MapPin, Globe, Check, ArrowRight, Sparkles, Code2, Award, CheckCircle2 
+  GraduationCap, BookOpen, MapPin, Check, ArrowRight, Sparkles, Building2, User 
 } from 'lucide-react';
 import { Navbar } from '../components/layout/Navbar';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
-const POPULAR_STATES: Record<string, string[]> = {
-  'California': ['San Francisco', 'Los Angeles', 'San Diego', 'San Jose', 'Palo Alto'],
-  'Massachusetts': ['Boston', 'Cambridge', 'Worcester'],
-  'Washington': ['Seattle', 'Bellevue', 'Redmond'],
-  'New York': ['New York City', 'Buffalo', 'Ithaca'],
-  'Texas': ['Austin', 'Dallas', 'Houston'],
-  'Illinois': ['Chicago', 'Urbana-Champaign'],
-  'International / Global': ['London', 'Paris', 'Tokyo', 'Singapore', 'Zurich', 'Toronto', 'Berlin'],
-  'Any State': ['Any City']
+// Comprehensive India States & UTs with 6-7 Academic / Tech Hub Cities
+const INDIA_STATES_AND_CITIES: Record<string, string[]> = {
+  'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Nashik', 'Aurangabad', 'Navi Mumbai', 'Kolhapur'],
+  'Karnataka': ['Bengaluru', 'Mysuru', 'Mangaluru', 'Hubballi', 'Belagavi', 'Manipal', 'Shivamogga'],
+  'Delhi (NCT)': ['New Delhi', 'North Delhi', 'South Delhi', 'Dwarka', 'Rohini', 'Connaught Place'],
+  'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli', 'Salem', 'Vellore', 'Tirunelveli'],
+  'Telangana': ['Hyderabad', 'Warangal', 'Nizamabad', 'Karimnagar', 'Khammam', 'Secunderabad'],
+  'Gujarat': ['Ahmedabad', 'Gandhinagar', 'Vadodara', 'Surat', 'Rajkot', 'Bhavnagar', 'Anand'],
+  'Uttar Pradesh': ['Noida', 'Lucknow', 'Kanpur', 'Varanasi', 'Greater Noida', 'Agra', 'Prayagraj'],
+  'West Bengal': ['Kolkata', 'Kharagpur', 'Durgapur', 'Siliguri', 'Howrah', 'Asansol'],
+  'Kerala': ['Thiruvananthapuram', 'Kochi', 'Kozhikode', 'Thrissur', 'Kollam', 'Palakkad'],
+  'Rajasthan': ['Jaipur', 'Jodhpur', 'Udaipur', 'Kota', 'Ajmer', 'Bikaner', 'Pilani'],
+  'Punjab': ['Chandigarh', 'Ludhiana', 'Amritsar', 'Jalandhar', 'Patiala', 'Bathinda'],
+  'Haryana': ['Gurugram', 'Faridabad', 'Panipat', 'Ambala', 'Rohtak', 'Hisar', 'Sonipat'],
+  'Madhya Pradesh': ['Bhopal', 'Indore', 'Gwalior', 'Jabalpur', 'Ujjain', 'Sagar'],
+  'Bihar': ['Patna', 'Gaya', 'Bhagalpur', 'Muzaffarpur', 'Darbhanga', 'Purnia'],
+  'Odisha': ['Bhubaneswar', 'Cuttack', 'Rourkela', 'Sambalpur', 'Berhampur', 'Balasore'],
+  'Andhra Pradesh': ['Visakhapatnam', 'Vijayawada', 'Guntur', 'Tirupati', 'Kakinada', 'Nellore'],
+  'Assam': ['Guwahati', 'Silchar', 'Dibrugarh', 'Jorhat', 'Tezpur', 'Nagaon'],
+  'Jammu & Kashmir': ['Srinagar', 'Jammu', 'Anantnag', 'Baramulla', 'Udhampur', 'Kathua'],
+  'Uttarakhand': ['Dehradun', 'Roorkee', 'Haridwar', 'Nainital', 'Haldwani', 'Rishikesh'],
+  'Goa': ['Panaji', 'Margao', 'Vasco da Gama', 'Mapusa', 'Ponda', 'Porvorim'],
+  'Himachal Pradesh': ['Shimla', 'Dharamshala', 'Mandi', 'Solan', 'Kullu', 'Hamirpur'],
+  'Chandigarh': ['Chandigarh', 'Mohali', 'Panchkula', 'Manimajra', 'IT Park'],
+  'Puducherry': ['Puducherry', 'Karaikal', 'Oulgaret', 'Yanam', 'Mahe'],
+  'Jharkhand': ['Ranchi', 'Jamshedpur', 'Dhanbad', 'Bokaro', 'Hazaribagh', 'Deoghar'],
+  'Chhattisgarh': ['Raipur', 'Bhilai', 'Bilaspur', 'Korba', 'Durg', 'Rajnandgaon'],
+  'Arunachal Pradesh': ['Itanagar', 'Naharlagun', 'Pasighat', 'Tawang', 'Ziro'],
+  'Manipur': ['Imphal', 'Churachandpur', 'Thoubal', 'Bishnupur', 'Ukhrul'],
+  'Meghalaya': ['Shillong', 'Tura', 'Jowai', 'Nongpoh', 'Williamnagar'],
+  'Mizoram': ['Aizawl', 'Lunglei', 'Champhai', 'Serchhip', 'Kolasib'],
+  'Nagaland': ['Kohima', 'Dimapur', 'Mokokchung', 'Tuensang', 'Wokha'],
+  'Sikkim': ['Gangtok', 'Namchi', 'Geyzing', 'Mangan', 'Ravangla'],
+  'Tripura': ['Agartala', 'Dharmanagar', 'Udaipur', 'Kailashahar', 'Belonia'],
+  'Andaman & Nicobar': ['Port Blair', 'Havelock', 'Diglipur', 'Garacharma'],
+  'Ladakh': ['Leh', 'Kargil', 'Diskit', 'Padum'],
+  'Dadra & Nagar Haveli and Daman & Diu': ['Daman', 'Diu', 'Silvassa'],
+  'Lakshadweep': ['Kavaratti', 'Agatti', 'Amini', 'Andrott'],
+  'All India (Any State)': ['Any City']
 };
 
-const POPULAR_SKILLS = [
-  'Python', 'PyTorch', 'TensorFlow', 'Scikit-Learn', 'LightGBM',
-  'HuggingFace', 'CUDA', 'Docker', 'FastAPI', 'LaTeX',
-  'C++', 'R', 'Pandas', 'NumPy', 'React',
-  'TypeScript', 'Node.js', 'Kubernetes', 'AWS', 'GCP',
-  'LangChain', 'OpenCV', 'MATLAB', 'Julia', 'Git'
-];
-
-const DOMAINS = [
-  '💻 Software & Distributed Systems',
+const RESEARCH_DOMAINS = [
   '🧠 Artificial Intelligence & Machine Learning',
-  '🏥 Healthcare & Biomedical ML',
-  '🔒 Cybersecurity & Cryptography',
-  '🌐 Networks, IoT & Cloud Computing',
+  '💻 Software Engineering & Distributed Systems',
+  '🏥 Healthcare Informatics & Biomedical ML',
+  '🔒 Cybersecurity, Cryptography & Privacy',
+  '🌐 Computer Networks, Cloud & IoT',
   '💬 NLP & Large Language Models',
-  '👁️ Computer Vision & Multimedia',
-  '⚛️ Quantum Computing & Algorithms',
-  '🔬 Bio-informatics & Computational Biology'
+  '👁️ Computer Vision, Graphics & Multimedia',
+  '🤖 Robotics, Autonomous Systems & Control',
+  '📊 Data Science, Analytics & Big Data',
+  '⚛️ Quantum Computing & Theoretical CS',
+  '⚡ Electrical, Electronics & Communication (VLSI/Embedded)',
+  '🔬 Bioinformatics & Computational Biology',
+  '📚 Educational Technology & Human-Computer Interaction (HCI)'
 ];
 
 export function Onboarding() {
@@ -63,35 +87,15 @@ export function Onboarding() {
   // Form State
   const [persona, setPersona] = useState<string>('RESEARCHER');
   const [primaryDomain, setPrimaryDomain] = useState<string>('🧠 Artificial Intelligence & Machine Learning');
-  const [customDomain, setCustomDomain] = useState<string>('');
   
-  // Location & Venue Preference State
-  const [venueType, setVenueType] = useState<string>('Peer-Reviewed Conference');
-  const [selectedState, setSelectedState] = useState<string>('California');
+  // Location & Venue Preference State (India-focused)
+  const [venueType, setVenueType] = useState<string>('Peer-Reviewed Conference (IEEE, ACM)');
+  const [selectedState, setSelectedState] = useState<string>('Maharashtra');
   const [selectedCities, setSelectedCities] = useState<string[]>(['Any City']);
-  const [customCityInput, setCustomCityInput] = useState<string>('');
   const [includeOutsideState, setIncludeOutsideState] = useState<boolean>(true);
-
-  // Tech Stack & Skills State
-  const [techStack, setTechStack] = useState<string[]>(['Python', 'PyTorch']);
-  const [skillSearch, setSkillSearch] = useState<string>('');
-  const [customSkillInput, setCustomSkillInput] = useState<string>('');
 
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Skill tag management
-  const addSkill = (skill: string) => {
-    const trimmed = skill.trim();
-    if (trimmed && !techStack.includes(trimmed)) {
-      setTechStack([...techStack, trimmed]);
-    }
-    setCustomSkillInput('');
-  };
-
-  const removeSkill = (skillToRemove: string) => {
-    setTechStack(techStack.filter((s) => s !== skillToRemove));
-  };
 
   // City selection management
   const toggleCity = (city: string) => {
@@ -108,23 +112,11 @@ export function Onboarding() {
     }
   };
 
-  const addCustomCity = () => {
-    if (customCityInput.trim()) {
-      const city = customCityInput.trim();
-      const filtered = selectedCities.filter((c) => c !== 'Any City');
-      if (!filtered.includes(city)) {
-        setSelectedCities([...filtered, city]);
-      }
-      setCustomCityInput('');
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    const finalDomain = customDomain.trim() || primaryDomain;
     const finalVenuePreference = {
       venueType,
       state: selectedState,
@@ -135,9 +127,8 @@ export function Onboarding() {
     try {
       const response = await api.put('/user/onboarding', {
         persona,
-        primaryDomain: finalDomain,
-        targetVenuePreference: finalVenuePreference,
-        techStack
+        primaryDomain,
+        targetVenuePreference: finalVenuePreference
       });
 
       if (response.data.user) {
@@ -152,10 +143,6 @@ export function Onboarding() {
     }
   };
 
-  const filteredSkills = POPULAR_SKILLS.filter(
-    (s) => !techStack.includes(s) && s.toLowerCase().includes(skillSearch.toLowerCase())
-  );
-
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <Navbar />
@@ -168,7 +155,7 @@ export function Onboarding() {
             Set Up Your Academic Profile
           </h1>
           <p className="text-sm text-slate-600 max-w-xl mx-auto">
-            Configure your research persona, venue location preferences, and core tech stack so our AI co-pilot and literature scanner can tailor their recommendations.
+            Configure your research persona, domain, and preferred Indian publication venue locations so our AI co-pilot and venue matcher can tailor their recommendations.
           </p>
         </div>
 
@@ -176,7 +163,7 @@ export function Onboarding() {
           <div className="bg-red-50 border border-red-200 text-red-700 text-xs p-3.5 rounded flex items-center justify-between">
             <span>{error}</span>
             <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700">
-              <X className="w-4 h-4" />
+              ✕
             </button>
           </div>
         )}
@@ -234,46 +221,34 @@ export function Onboarding() {
                 <span>2. Primary Research Domain</span>
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Choose your field of study or specify a custom domain.
+                Choose your core field of study and research discipline.
               </p>
             </div>
 
-            <div className="space-y-3">
+            <div>
               <select
                 value={primaryDomain}
-                onChange={(e) => {
-                  setPrimaryDomain(e.target.value);
-                  setCustomDomain('');
-                }}
-                className="w-full text-xs bg-white border border-slate-300 rounded px-3 py-2 text-slate-800 focus:outline-none focus:ring-1 focus:ring-navy-800"
+                onChange={(e) => setPrimaryDomain(e.target.value)}
+                className="w-full text-xs bg-white border border-slate-300 rounded px-3 py-2.5 text-slate-800 font-medium focus:outline-none focus:ring-1 focus:ring-navy-800 shadow-2xs"
               >
-                {DOMAINS.map((d) => (
+                {RESEARCH_DOMAINS.map((d) => (
                   <option key={d} value={d}>
                     {d}
                   </option>
                 ))}
               </select>
-
-              <div className="pt-1">
-                <Input
-                  label="Or specify a custom niche domain (optional):"
-                  placeholder="e.g. Federated Clinical NLP for Rare Diseases"
-                  value={customDomain}
-                  onChange={(e) => setCustomDomain(e.target.value)}
-                />
-              </div>
             </div>
           </Card>
 
-          {/* Section 3: Target Venue & Location Preference */}
+          {/* Section 3: Target Venue & Location Preference (India-Specific) */}
           <Card className="p-6 border-slate-200 shadow-xs space-y-4">
             <div>
               <h2 className="text-base font-bold text-slate-900 flex items-center space-x-2">
                 <MapPin className="w-5 h-5 text-navy-800" />
-                <span>3. Target Publication Venue & Location Preference</span>
+                <span>3. Target Publication Venue & Location Preference (India)</span>
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Specify your preferred venue format and geographical preference for in-person / hybrid conferences.
+                Specify your preferred venue format and Indian State / UT for conference targeting.
               </p>
             </div>
 
@@ -287,16 +262,16 @@ export function Onboarding() {
                   onChange={(e) => setVenueType(e.target.value)}
                   className="w-full text-xs bg-white border border-slate-300 rounded px-3 py-2 text-slate-800 focus:outline-none focus:ring-1 focus:ring-navy-800"
                 >
-                  <option value="Peer-Reviewed Conference">Peer-Reviewed Conference (IEEE, ACM)</option>
-                  <option value="Academic Journal">Academic Journal (Springer, Nature, Elsevier)</option>
-                  <option value="Symposium / Workshop">Workshop or Specialized Symposium</option>
-                  <option value="Any Format">Any Peer-Reviewed Format</option>
+                  <option value="Peer-Reviewed Conference (IEEE, ACM)">Peer-Reviewed Conference (IEEE, ACM, Springer)</option>
+                  <option value="Academic Journal (Scopus, SCI, Nature)">Academic Journal (Scopus, SCI, Nature, Elsevier)</option>
+                  <option value="Specialized Symposium / Workshop">Specialized Symposium / Workshop</option>
+                  <option value="Any Peer-Reviewed Venue">Any Peer-Reviewed Venue</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Preferred State / Region:
+                  Preferred State / UT (India):
                 </label>
                 <select
                   value={selectedState}
@@ -306,7 +281,7 @@ export function Onboarding() {
                   }}
                   className="w-full text-xs bg-white border border-slate-300 rounded px-3 py-2 text-slate-800 focus:outline-none focus:ring-1 focus:ring-navy-800"
                 >
-                  {Object.keys(POPULAR_STATES).map((st) => (
+                  {Object.keys(INDIA_STATES_AND_CITIES).map((st) => (
                     <option key={st} value={st}>
                       {st}
                     </option>
@@ -315,55 +290,50 @@ export function Onboarding() {
               </div>
             </div>
 
-            {/* City Selection */}
-            <div className="space-y-2 pt-1">
+            {/* City Selection (Top 6-7 Cities + Any City) */}
+            <div className="space-y-2 pt-2">
               <label className="block text-xs font-semibold text-slate-700">
-                Preferred Cities in {selectedState}:
+                Preferred Academic & Conference Cities in {selectedState}:
               </label>
               <div className="flex flex-wrap gap-2">
-                {(POPULAR_STATES[selectedState] || ['Any City']).map((city) => {
+                {/* Any City Chip */}
+                <button
+                  type="button"
+                  onClick={() => toggleCity('Any City')}
+                  className={`px-3 py-1.5 rounded text-xs transition-colors font-medium border flex items-center space-x-1 ${
+                    selectedCities.includes('Any City')
+                      ? 'bg-navy-800 text-white border-navy-800'
+                      : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
+                  }`}
+                >
+                  {selectedCities.includes('Any City') && <Check className="w-3.5 h-3.5 mr-0.5" />}
+                  <span>Any City</span>
+                </button>
+
+                {/* 6-7 City Chips */}
+                {(INDIA_STATES_AND_CITIES[selectedState] || []).map((city) => {
                   const isCitySelected = selectedCities.includes(city);
                   return (
                     <button
                       key={city}
                       type="button"
                       onClick={() => toggleCity(city)}
-                      className={`px-2.5 py-1 rounded text-xs transition-colors flex items-center space-x-1 border ${
+                      className={`px-3 py-1.5 rounded text-xs transition-colors font-medium border flex items-center space-x-1 ${
                         isCitySelected
                           ? 'bg-navy-800 text-white border-navy-800'
                           : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
                       }`}
                     >
-                      {isCitySelected && <Check className="w-3 h-3 mr-0.5" />}
+                      {isCitySelected && <Check className="w-3.5 h-3.5 mr-0.5" />}
                       <span>{city}</span>
                     </button>
                   );
                 })}
               </div>
-
-              {/* Add custom city */}
-              <div className="flex items-center space-x-2 pt-1">
-                <input
-                  type="text"
-                  placeholder="Add another city in this state..."
-                  value={customCityInput}
-                  onChange={(e) => setCustomCityInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      addCustomCity();
-                    }
-                  }}
-                  className="text-xs border border-slate-300 rounded px-3 py-1.5 flex-1 focus:outline-none focus:ring-1 focus:ring-navy-800"
-                />
-                <Button type="button" size="sm" variant="outline" onClick={addCustomCity}>
-                  <Plus className="w-3.5 h-3.5 mr-1" /> Add
-                </Button>
-              </div>
             </div>
 
             {/* Checkbox toggle: Conferences outside this state */}
-            <div className="pt-2 border-t border-slate-100">
+            <div className="pt-3 border-t border-slate-100">
               <label className="flex items-center space-x-2.5 cursor-pointer text-xs text-slate-700">
                 <input
                   type="checkbox"
@@ -371,104 +341,8 @@ export function Onboarding() {
                   onChange={(e) => setIncludeOutsideState(e.target.checked)}
                   className="w-4 h-4 text-navy-800 rounded border-slate-300 focus:ring-navy-800"
                 />
-                <span>Also consider top tier conferences outside this specific state / region</span>
+                <span>Also consider top tier national conferences outside this particular state / UT</span>
               </label>
-            </div>
-          </Card>
-
-          {/* Section 4: Tech Stack & Skill Tags (Job Platform Style) */}
-          <Card className="p-6 border-slate-200 shadow-xs space-y-4">
-            <div>
-              <h2 className="text-base font-bold text-slate-900 flex items-center space-x-2">
-                <Code2 className="w-5 h-5 text-navy-800" />
-                <span>4. Tech Stack & Methodology Skills</span>
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Select or search tools, libraries, and frameworks you use (used in Stage 4 Implementation Roadmap).
-              </p>
-            </div>
-
-            {/* Selected Skills Chips */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Your Selected Skills ({techStack.length}):
-              </label>
-              {techStack.length === 0 ? (
-                <p className="text-xs text-slate-400 italic">No skills selected yet. Choose from below or type custom ones.</p>
-              ) : (
-                <div className="flex flex-wrap gap-1.5">
-                  {techStack.map((skill) => (
-                    <span
-                      key={skill}
-                      className="inline-flex items-center space-x-1.5 bg-navy-800 text-white text-xs px-2.5 py-1 rounded font-medium shadow-2xs"
-                    >
-                      <span>{skill}</span>
-                      <button
-                        type="button"
-                        onClick={() => removeSkill(skill)}
-                        className="hover:text-red-300 focus:outline-none"
-                        title={`Remove ${skill}`}
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Search and Quick Add */}
-            <div className="space-y-2 pt-2">
-              <div className="relative">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                <input
-                  type="text"
-                  placeholder="Filter or search skills (e.g. PyTorch, Docker, C++)..."
-                  value={skillSearch}
-                  onChange={(e) => setSkillSearch(e.target.value)}
-                  className="w-full text-xs pl-9 pr-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-navy-800"
-                />
-              </div>
-
-              {/* Filtered suggestions */}
-              <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto p-1 bg-slate-50 border border-slate-200 rounded">
-                {filteredSkills.slice(0, 16).map((skill) => (
-                  <button
-                    key={skill}
-                    type="button"
-                    onClick={() => addSkill(skill)}
-                    className="text-xs bg-white border border-slate-200 hover:border-navy-800 text-slate-700 px-2 py-0.5 rounded transition-all flex items-center space-x-1 hover:text-navy-800"
-                  >
-                    <Plus className="w-3 h-3 text-slate-400" />
-                    <span>{skill}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Add custom skill input */}
-              <div className="flex items-center space-x-2 pt-1">
-                <input
-                  type="text"
-                  placeholder="Type a custom skill or library..."
-                  value={customSkillInput}
-                  onChange={(e) => setCustomSkillInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      addSkill(customSkillInput);
-                    }
-                  }}
-                  className="text-xs border border-slate-300 rounded px-3 py-1.5 flex-1 focus:outline-none focus:ring-1 focus:ring-navy-800"
-                />
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => addSkill(customSkillInput)}
-                >
-                  <Plus className="w-3.5 h-3.5 mr-1" /> Add Custom
-                </Button>
-              </div>
             </div>
           </Card>
 
@@ -484,7 +358,7 @@ export function Onboarding() {
               Complete Profile & Enter Research Dashboard
             </Button>
             <p className="text-[11px] text-slate-500 text-center mt-2">
-              You can adjust these settings at any time in your Profile Settings.
+              You can adjust these settings anytime in your Profile Settings.
             </p>
           </div>
         </form>
