@@ -63,7 +63,7 @@ const handleLiteratureScan = async (req: AuthenticatedRequest, res: Response) =>
 router.post('/literature/scan', requireAuth, handleLiteratureScan);
 router.post('/scan', requireAuth, handleLiteratureScan);
 
-// GET /api/project/:id/gaps - Synthesize research gaps and opportunities
+// GET /api/project/:id/gaps - Synthesize research gaps (generate once, cache in DB)
 router.get('/project/:id/gaps', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
@@ -72,15 +72,56 @@ router.get('/project/:id/gaps', requireAuth, async (req: AuthenticatedRequest, r
       return res.status(404).json({ error: 'Project not found' });
     }
 
+    // HYDRATION FIRST: if gaps already saved, return them instantly
+    if (project.gaps && project.gaps.length > 0) {
+      return res.json({ gaps: project.gaps });
+    }
+
+    // Otherwise generate with AI and persist
     const { generateResearchGaps } = await import('../services/geminiService');
     const gaps = await generateResearchGaps(
       project.academicTitle || project.title,
       project.methodologyOverview || project.rawInput || ''
     );
 
+    // Save gaps into DB so next visit is instant
+    await Project.findByIdAndUpdate(
+      id,
+      { $set: { gaps } },
+      { new: true }
+    );
+
     return res.json({ gaps });
   } catch (error) {
     console.error('Fetch gaps error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// PUT /api/project/:id/stage - Atomically advance currentStage
+router.put('/project/:id/stage', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { stage } = req.body;
+
+    if (typeof stage !== 'number' || stage < 1 || stage > 7) {
+      return res.status(400).json({ error: 'stage must be a number between 1 and 7' });
+    }
+
+    // $max ensures stage only ever moves forward, never backward
+    const project = await Project.findByIdAndUpdate(
+      id,
+      { $max: { currentStage: stage } },
+      { new: true }
+    );
+
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    return res.json({ currentStage: project.currentStage });
+  } catch (error) {
+    console.error('Update stage error:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 });

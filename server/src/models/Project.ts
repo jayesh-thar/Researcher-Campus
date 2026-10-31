@@ -112,6 +112,13 @@ const ProjectSchema = new Schema<IProject>({
     category: { type: String, enum: ['BASELINE', 'COMPETITOR', 'REFERENCE'], default: 'BASELINE' },
     bibtex: String
   }],
+  gaps: [{
+    id: String,
+    gapTitle: String,
+    currentLimitation: String,
+    proposedInnovation: String,
+    impactScore: Number
+  }],
   roadmap: {
     recommendedDatasets: [{ title: String, url: String, description: String }],
     recommendedTools: [{ name: String, url: String, category: String }],

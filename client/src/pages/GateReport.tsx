@@ -70,6 +70,8 @@ export function GateReport() {
             remediationAngle: project.gateResult.remediationAngle,
             literature: project.literature
           });
+          // Advance stage to 2 (idempotent — $max never goes back)
+          await api.put(`/project/${id}/stage`, { stage: 2 });
           setLoading(false);
           return;
         }
@@ -91,6 +93,8 @@ export function GateReport() {
 
       const scanResult: GateScanData = scanRes.data.gateScan;
       setGateData(scanResult);
+      // Advance stage to 2 after first scan completes
+      await api.put(`/project/${id}/stage`, { stage: 2 });
     } catch (err) {
       console.error('Failed to load Gate report:', err);
     } finally {

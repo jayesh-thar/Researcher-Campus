@@ -25,6 +25,17 @@ export interface ProjectItem {
   updatedAt: string;
 }
 
+// Maps currentStage number → the correct route path segment
+const STAGE_ROUTES: Record<number, string> = {
+  1: 'new',          // Stage 1: Idea Lab (no project yet, but if stage=1 just go to report to re-enter)
+  2: 'report',       // Stage 2: Literature Gate Report
+  3: 'whitespace',   // Stage 3: Whitespace Board
+  4: 'roadmap',      // Stage 4: Implementation Roadmap
+  5: 'studio',       // Stage 5: Paper Studio
+  6: 'audit',        // Stage 6: Pre-Flight Audit
+  7: 'venues',       // Stage 7: Venue Matcher
+};
+
 export function Dashboard() {
   const [loading, setLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -364,7 +375,7 @@ export function Dashboard() {
                     </button>
                   </div>
 
-                  <Link to={`/project/${p.id}/report`}>
+                  <Link to={`/project/${p.id}/${STAGE_ROUTES[p.currentStage] || 'report'}`}>
                     <Button size="sm" variant="secondary" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
                       Open Stage {p.currentStage} Workstation
                     </Button>

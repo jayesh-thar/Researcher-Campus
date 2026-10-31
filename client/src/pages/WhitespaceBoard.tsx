@@ -69,7 +69,10 @@ export function WhitespaceBoard() {
         }
       }
 
-      // Fetch AI Research Gaps
+      // Advance stage to 3 (only moves forward, never back)
+      await api.put(`/project/${id || 'demo'}/stage`, { stage: 3 });
+
+      // Fetch AI Research Gaps (cached in DB after first load)
       const gapsRes = await api.get(`/project/${id || 'demo'}/gaps`);
       setResearchGaps(gapsRes.data.gaps || []);
     } catch (err) {
