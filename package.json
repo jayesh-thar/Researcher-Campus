@@ -1,0 +1,20 @@
+{
+  "name": "researcher-campus",
+  "version": "2.0.0",
+  "description": "Researcher Campus — Autonomous AI Academic Operating System (Monorepo)",
+  "private": true,
+  "scripts": {
+    "dev": "start \"RC-Server\" /D server cmd /c npm run dev & start \"RC-Client\" /D client cmd /c npm run dev",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build": "cd server && npm run build && cd ../client && npm run build",
+    "build:server": "cd server && npm run build",
+    "build:client": "cd client && npm run build",
+    "install:all": "cd server && npm install && cd ../client && npm install"
+  },
+  "workspaces": [
+    "server",
+    "client"
+  ]
+}
+

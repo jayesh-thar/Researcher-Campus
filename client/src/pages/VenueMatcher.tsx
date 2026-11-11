@@ -47,6 +47,7 @@ export function VenueMatcher() {
         setVenues(response.data.venues);
         setSelectedTargetId(response.data.venues[0].id);
       }
+      // Stage 7 is advanced server-side when venues are fetched/cached
     } catch (err) {
       console.error('Fetch venues error:', err);
     } finally {
@@ -61,15 +62,29 @@ export function VenueMatcher() {
   const handleDownloadPackage = async () => {
     setDownloadingZip(true);
     try {
-      await api.post(`/project/${id || 'demo'}/venues/export-package`);
-      setDownloadingZip(false);
+      // GET the zip as binary blob — server streams real zip bytes
+      const response = await api.get(
+        `/project/${id || 'demo'}/venues/download-package`,
+        { responseType: 'blob' }
+      );
+
+      // Trigger a real browser download
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/zip' }));
+      const link = document.createElement('a');
+      link.href = url;
+      const title = projectTitle.replace(/[^a-z0-9]/gi, '_').slice(0, 40) || 'submission';
+      link.download = `${title}_submission_package.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
       setDownloadSuccess(true);
       setTimeout(() => setDownloadSuccess(false), 4000);
     } catch (err) {
       console.error('Download package error:', err);
+    } finally {
       setDownloadingZip(false);
-      setDownloadSuccess(true);
-      setTimeout(() => setDownloadSuccess(false), 4000);
     }
   };
 
