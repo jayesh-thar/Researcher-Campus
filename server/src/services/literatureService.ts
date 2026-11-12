@@ -320,24 +320,27 @@ export function calculateTfIdfVectorCosineSimilarity(textA: string, textB: strin
   return computeVectorCosineSimilarity(vecA, vecB);
 }
 
-// Live Embedding Vector Cosine Similarity via Google Gemini text-embedding-004
+// Live Embedding Vector Cosine Similarity via Google Gemini Embedding Models
 export async function calculateLiveEmbeddingSimilarity(textA: string, textB: string): Promise<number> {
   const client = getGenAIClient();
   if (client) {
-    try {
-      const embeddingModel = client.getGenerativeModel({ model: 'gemini-embedding-001' });
-      const [embA, embB] = await Promise.all([
-        embeddingModel.embedContent(textA.slice(0, 1000)),
-        embeddingModel.embedContent(textB.slice(0, 1000))
-      ]);
-      const vectorA = embA.embedding?.values;
-      const vectorB = embB.embedding?.values;
+    const candidateEmbeddingModels = ['gemini-embedding-001', 'text-embedding-004'];
+    for (const embModel of candidateEmbeddingModels) {
+      try {
+        const embeddingModel = client.getGenerativeModel({ model: embModel });
+        const [embA, embB] = await Promise.all([
+          embeddingModel.embedContent(textA.slice(0, 1000)),
+          embeddingModel.embedContent(textB.slice(0, 1000))
+        ]);
+        const vectorA = embA.embedding?.values;
+        const vectorB = embB.embedding?.values;
 
-      if (vectorA && vectorB && vectorA.length > 0) {
-        return computeVectorCosineSimilarity(vectorA, vectorB);
+        if (vectorA && vectorB && vectorA.length > 0) {
+          return computeVectorCosineSimilarity(vectorA, vectorB);
+        }
+      } catch (err: any) {
+        console.warn(`[Embedding] Model ${embModel} notice: ${(err as any)?.message || err}. Trying next embedding tier...`);
       }
-    } catch (err) {
-      console.warn('[Embedding] Gemini embedding fallback to TF-IDF vectorizer:', (err as any)?.message);
     }
   }
 

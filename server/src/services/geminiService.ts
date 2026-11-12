@@ -71,20 +71,28 @@ export function getGenAIClient(): GoogleGenerativeAI | null {
   return new GoogleGenerativeAI(key);
 }
 
-// CASCADING MULTI-MODEL FALLBACK CHAIN (2.0-flash -> 1.5-flash -> 1.5-pro -> 3.7-flash)
+// CASCADING MULTI-MODEL FALLBACK CHAIN WITH AUTOMATIC QUOTA & RATE-LIMIT FAILOVER
 async function generateWithModelFallback(prompt: string, isJson: boolean = true): Promise<string | null> {
   const client = getGenAIClient();
   if (!client) return null;
 
-  // Active Google Gemini model tiers (with seamless multi-generation fallback)
+  // Active Google Gemini model tiers — each has its own independent rate-limit pool in Google AI Studio
   const candidateModels = [
+    // 1. User Priority Models
     'gemini-3.8-flash',
     'gemini-3.5-flash-lite',
     'gemini-3.5-flash',
+    // 2. High-Speed, High-RPM Free Tiers (independent quota pools)
     'gemini-2.5-flash',
     'gemini-2.0-flash',
+    'gemini-2.5-flash-lite',
+    'gemini-2.0-flash-lite',
     'gemini-1.5-flash',
+    'gemini-1.5-flash-8b',
+    // 3. High-Capacity Context Backup
+    'gemini-1.5-pro',
   ];
+
   for (const modelName of candidateModels) {
     try {
       const model = client.getGenerativeModel({
@@ -98,10 +106,26 @@ async function generateWithModelFallback(prompt: string, isJson: boolean = true)
       }
     } catch (err: any) {
       const msg = err?.message || String(err);
-      if (msg.includes('404') || msg.includes('503') || msg.includes('no longer available')) {
-        console.warn(`[Gemini AI] Model ${modelName} unavailable, seamlessly falling back to next tier...`);
+      const isQuotaOrLimitError =
+        msg.includes('429') ||
+        msg.includes('404') ||
+        msg.includes('503') ||
+        msg.includes('500') ||
+        msg.includes('RESOURCE_EXHAUSTED') ||
+        msg.toLowerCase().includes('quota') ||
+        msg.toLowerCase().includes('rate limit') ||
+        msg.toLowerCase().includes('rate_limit') ||
+        msg.toLowerCase().includes('exhausted') ||
+        msg.toLowerCase().includes('unavailable') ||
+        msg.toLowerCase().includes('no longer available') ||
+        msg.toLowerCase().includes('overloaded');
+
+      if (isQuotaOrLimitError) {
+        console.warn(`[Gemini AI] Model ${modelName} reached rate-limit/quota or unavailable (${msg.slice(0, 75)}...). Seamlessly shifting to next model in cascade...`);
         continue;
       }
+
+      // If error is JSON formatting related, attempt plain text fallback on this model
       try {
         const fallbackModel = client.getGenerativeModel({ model: modelName });
         const res = await fallbackModel.generateContent(prompt);
