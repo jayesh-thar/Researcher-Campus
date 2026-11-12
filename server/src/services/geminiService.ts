@@ -1,4 +1,4 @@
-﻿import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export interface ReformulateResult {
   academicTitle: string;
@@ -76,11 +76,14 @@ async function generateWithModelFallback(prompt: string, isJson: boolean = true)
   const client = getGenAIClient();
   if (!client) return null;
 
-  // Active Google Gemini model tiers (Gemini 2.5 Flash, 3.7 Flash, 2.5 Pro, 2.5 Flash-Lite, 2.0 Flash)
+  // Active Google Gemini model tiers (with seamless multi-generation fallback)
   const candidateModels = [
     'gemini-3.8-flash',
     'gemini-3.5-flash-lite',
     'gemini-3.5-flash',
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash',
   ];
   for (const modelName of candidateModels) {
     try {
@@ -515,11 +518,11 @@ function generateDynamicFallbackReformulation(
     return {
       academicTitle: 'Predictive Clinical Risk Modeling with SMOTE-Tomek and Interaction Feature Engineering for Early Diabetes Detection',
       problemStatement: 'Severe class imbalance in large-scale patient datasets (8.5% positive prevalence) impairs clinical early warning classifiers, leading to elevated false-negative rates in asymptomatic stages.',
-      methodologyOverview: 'We introduce a hybrid clinical diagnostic framework combining SMOTE-Tomek resampling with non-linear interaction feature engineering (e.g., HbA1c Ã— Glucose, Age Ã— BMI). Nine classifiers were systematically evaluated, with LightGBM achieving optimal generalization.',
+      methodologyOverview: 'We introduce a hybrid clinical diagnostic framework combining SMOTE-Tomek resampling with non-linear interaction feature engineering (e.g., HbA1c × Glucose, Age × BMI). Nine classifiers were systematically evaluated, with LightGBM achieving optimal generalization.',
       targetMetrics: ['Classification Accuracy (97.59%)', 'Precision (99.39%)', 'AUC-ROC (99.74%)', 'Clinical Sensitivity / Recall (%)'],
       healthScore: 96,
       clarityNotes: 'High empirical rigor with defined data volume (100,000 patients) and clear feature interaction modeling.',
-      inferredDomain: 'ðŸ¥ Healthcare & Clinical Machine Learning'
+      inferredDomain: '🏥 Healthcare & Clinical Machine Learning'
     };
   }
 
@@ -531,7 +534,7 @@ function generateDynamicFallbackReformulation(
       targetMetrics: ['Perplexity (PPL)', 'BLEU-4 Score', 'ROUGE-L F1 (%)', 'Parameter Overhead (M params)'],
       healthScore: 92,
       clarityNotes: 'Well-scoped theoretical formulation addressing domain catastrophic forgetting.',
-      inferredDomain: 'ðŸ§  Natural Language Processing & LLMs'
+      inferredDomain: '🧠 Natural Language Processing & LLMs'
     };
   }
 
@@ -543,7 +546,7 @@ function generateDynamicFallbackReformulation(
     targetMetrics: ['Empirical Accuracy (%)', 'Processing Latency (ms)', 'Throughput (ops/sec)', 'Memory Overhead (MB)'],
     healthScore: 90,
     clarityNotes: 'Strong research foundation with defined empirical evaluation criteria.',
-    inferredDomain: userProfile?.primaryDomain || 'ðŸ’» Computer Science & Machine Learning'
+    inferredDomain: userProfile?.primaryDomain || '💻 Computer Science & Machine Learning'
   };
 }
 
@@ -571,7 +574,7 @@ function generateFallbackLiterature(
         year: 2025,
         venue: 'Elsevier Computers in Biology and Medicine',
         doiUrl: 'https://doi.org/10.1016/j.compbiomed.2025.107892',
-        abstract: 'Applies SMOTE and ADASYN oversampling with CatBoost on cardiovascular datasets. Does not evaluate compound interaction terms like HbA1c Ã— Glucose.',
+        abstract: 'Applies SMOTE and ADASYN oversampling with CatBoost on cardiovascular datasets. Does not evaluate compound interaction terms like HbA1c × Glucose.',
         category: 'COMPETITOR',
         overlapReason: 'Direct competitor in clinical class resampling; proposed work advances feature interaction synergy and LightGBM AUC-ROC performance.'
       },
@@ -630,7 +633,7 @@ function generateFallbackResearchGaps(academicTitle: string): ResearchGapItem[] 
       {
         id: 'gap-1',
         gapTitle: 'Absence of Non-Linear Biomarker Interaction Modeling',
-        currentLimitation: 'Standard clinical baseline classifiers evaluate isolated linear demographic factors, missing critical compound risk indicators like (HbA1c Ã— Blood Glucose) and (Age Ã— BMI).',
+        currentLimitation: 'Standard clinical baseline classifiers evaluate isolated linear demographic factors, missing critical compound risk indicators like (HbA1c × Blood Glucose) and (Age × BMI).',
         proposedInnovation: 'Introduce systematic 2nd-order non-linear interaction feature engineering to capture synergistic physiological thresholds.',
         impactScore: 96
       },
@@ -719,7 +722,7 @@ function generateFallbackRoadmap(
         {
           phase: 'DEVELOPMENT',
           tasks: [
-            'Construct non-linear interaction features (HbA1c Ã— Glucose, Age Ã— BMI)',
+            'Construct non-linear interaction features (HbA1c × Glucose, Age × BMI)',
             'Apply SMOTE-Tomek pipeline to synthesize balanced training partitions',
             'Train 9 candidate classifiers including LightGBM, Random Forest, and XGBoost'
           ]
