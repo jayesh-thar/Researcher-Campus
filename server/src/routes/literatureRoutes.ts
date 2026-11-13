@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { executeMultiEngineLiteratureScan } from '../services/literatureService';
 import { Project, ILiteratureItem } from '../models/Project';
 import { requireAuth, AuthenticatedRequest } from '../middlewares/authMiddleware';
+import { findUserProject } from '../utils/projectAuth';
 
 const router = Router();
 
@@ -33,24 +34,27 @@ const handleLiteratureScan = async (req: AuthenticatedRequest, res: Response) =>
     );
 
     if (projectId) {
-      // Use atomic findByIdAndUpdate to prevent Mongoose VersionErrors under concurrent clicks
-      await Project.findByIdAndUpdate(
-        projectId,
-        {
-          $set: {
-            gateResult: {
-              status: gateScan.status,
-              noveltyScore: gateScan.noveltyScore,
-              maxOverlapPercent: gateScan.maxOverlapPercent,
-              whitespaceStatement: gateScan.whitespaceStatement,
-              remediationAngle: gateScan.remediationAngle
+      // Validate workspace ownership before updating
+      const authCheck = await findUserProject(projectId, req.user?.userId);
+      if (authCheck.project) {
+        await Project.findByIdAndUpdate(
+          projectId,
+          {
+            $set: {
+              gateResult: {
+                status: gateScan.status,
+                noveltyScore: gateScan.noveltyScore,
+                maxOverlapPercent: gateScan.maxOverlapPercent,
+                whitespaceStatement: gateScan.whitespaceStatement,
+                remediationAngle: gateScan.remediationAngle
+              },
+              literature: gateScan.literature
             },
-            literature: gateScan.literature
+            $max: { currentStage: 2 }
           },
-          $max: { currentStage: 2 }
-        },
-        { new: true }
-      );
+          { new: true }
+        );
+      }
     }
 
     return res.json({ gateScan });
@@ -67,9 +71,9 @@ router.post('/scan', requireAuth, handleLiteratureScan);
 router.get('/project/:id/gaps', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const project = await Project.findById(id);
+    const { project, status, error } = await findUserProject(id, req.user?.userId);
     if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
+      return res.status(status).json({ error });
     }
 
     // HYDRATION FIRST: if gaps already saved, return them instantly
@@ -108,18 +112,19 @@ router.put('/project/:id/stage', requireAuth, async (req: AuthenticatedRequest, 
       return res.status(400).json({ error: 'stage must be a number between 1 and 7' });
     }
 
+    const { project, status, error } = await findUserProject(id, req.user?.userId);
+    if (!project) {
+      return res.status(status).json({ error });
+    }
+
     // $max ensures stage only ever moves forward, never backward
-    const project = await Project.findByIdAndUpdate(
+    const updated = await Project.findByIdAndUpdate(
       id,
       { $max: { currentStage: stage } },
       { new: true }
     );
 
-    if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
-    }
-
-    return res.json({ currentStage: project.currentStage });
+    return res.json({ currentStage: updated?.currentStage ?? stage });
   } catch (error) {
     console.error('Update stage error:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
@@ -136,9 +141,9 @@ router.post('/project/:id/literature/import', requireAuth, async (req: Authentic
       return res.status(400).json({ error: 'bibtexText string is required' });
     }
 
-    const project = await Project.findById(id);
+    const { project, status, error } = await findUserProject(id, req.user?.userId);
     if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
+      return res.status(status).json({ error });
     }
 
     // Parse BibTeX entry title and authors
@@ -238,9 +243,9 @@ router.post('/project/create', requireAuth, handleProjectCreate);
 router.get('/project/:id', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const project = await Project.findById(id);
+    const { project, status, error } = await findUserProject(id, req.user?.userId);
     if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
+      return res.status(status).json({ error });
     }
     return res.json({ project });
   } catch (error) {
@@ -254,9 +259,9 @@ router.put('/project/:id/title', requireAuth, async (req: AuthenticatedRequest, 
   try {
     const { id } = req.params;
     const { title, academicTitle } = req.body;
-    const project = await Project.findById(id);
+    const { project, status, error } = await findUserProject(id, req.user?.userId);
     if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
+      return res.status(status).json({ error });
     }
     if (title) project.title = title;
     if (academicTitle) project.academicTitle = academicTitle;
@@ -272,10 +277,11 @@ router.put('/project/:id/title', requireAuth, async (req: AuthenticatedRequest, 
 router.delete('/project/:id', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const project = await Project.findByIdAndDelete(id);
+    const { project, status, error } = await findUserProject(id, req.user?.userId);
     if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
+      return res.status(status).json({ error });
     }
+    await Project.findByIdAndDelete(project._id);
     return res.json({ message: 'Project workspace deleted successfully', id });
   } catch (error) {
     console.error('Delete project error:', error);
@@ -287,9 +293,9 @@ router.delete('/project/:id', requireAuth, async (req: AuthenticatedRequest, res
 router.get('/project/:id/logs', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const project = await Project.findById(id);
+    const { project, status, error } = await findUserProject(id, req.user?.userId);
     if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
+      return res.status(status).json({ error });
     }
 
     const logEntries = [

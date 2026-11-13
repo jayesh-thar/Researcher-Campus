@@ -3,6 +3,7 @@ import { Project } from '../models/Project';
 import { requireAuth, AuthenticatedRequest } from '../middlewares/authMiddleware';
 import { generateDynamicVenues } from '../services/geminiService';
 import { buildZipBuffer } from '../utils/zipBuilder';
+import { findUserProject } from '../utils/projectAuth';
 
 const router = Router();
 
@@ -24,10 +25,10 @@ export interface VenueItem {
 router.get('/project/:id/venues', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const project = await Project.findById(id);
+    const { project, status, error } = await findUserProject(id, req.user?.userId);
 
     if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
+      return res.status(status).json({ error });
     }
 
     // HYDRATION FIRST: if venues already cached return instantly
@@ -96,10 +97,10 @@ router.get('/project/:id/venues', requireAuth, async (req: AuthenticatedRequest,
 router.get('/project/:id/venues/download-package', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const project = await Project.findById(id);
+    const { project, status, error } = await findUserProject(id, req.user?.userId);
 
     if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
+      return res.status(status).json({ error });
     }
 
     const title = (project.academicTitle || project.title || 'manuscript').replace(/[^a-z0-9]/gi, '_');
@@ -168,8 +169,13 @@ ${(project.methodologyOverview || '').slice(0, 600)}
   }
 });
 
-// POST /api/project/:id/venues/export-package — legacy, now redirects to GET download
+// POST /api/project/:id/venues/export-package — legacy, now validates and redirects to GET download
 router.post('/project/:id/venues/export-package', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+  const { project, status, error } = await findUserProject(id, req.user?.userId);
+  if (!project) {
+    return res.status(status).json({ error });
+  }
   return res.json({
     success: true,
     downloadUrl: `/api/project/${req.params.id}/venues/download-package`

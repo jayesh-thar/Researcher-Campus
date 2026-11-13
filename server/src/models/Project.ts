@@ -50,6 +50,8 @@ export interface IProject extends Document {
   roadmap: {
     recommendedDatasets: Array<{ title: string; url: string; description: string }>;
     recommendedTools: Array<{ name: string; url: string; category: string }>;
+    datasets?: Array<any>;
+    tools?: Array<any>;
     checklist: IRoadmapTask[];
   };
   document: {

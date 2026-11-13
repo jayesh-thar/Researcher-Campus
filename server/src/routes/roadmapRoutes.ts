@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { Project } from '../models/Project';
 import { requireAuth, AuthenticatedRequest } from '../middlewares/authMiddleware';
 import { generateDynamicRoadmap, chatWithAiAssistant } from '../services/geminiService';
+import { findUserProject } from '../utils/projectAuth';
 
 const router = Router();
 
@@ -9,14 +10,17 @@ const router = Router();
 router.get('/project/:id/roadmap', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const project = await Project.findById(id);
+    const { project, status, error } = await findUserProject(id, req.user?.userId);
 
     if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
+      return res.status(status).json({ error });
     }
 
     // Auto-generate dynamic roadmap if not initialized or has empty datasets/tools
-    if (!project.roadmap?.datasets || project.roadmap.datasets.length === 0 || !project.roadmap?.tools || project.roadmap.tools.length === 0) {
+    const currentDatasets = project.roadmap?.datasets || project.roadmap?.recommendedDatasets || [];
+    const currentTools = project.roadmap?.tools || project.roadmap?.recommendedTools || [];
+
+    if (currentDatasets.length === 0 || currentTools.length === 0) {
       const dynamic = await generateDynamicRoadmap(
         project.academicTitle || project.title || 'Research Project',
         project.methodologyOverview || 'Proposed Methodology'
@@ -34,6 +38,16 @@ router.get('/project/:id/roadmap', requireAuth, async (req: AuthenticatedRequest
           );
 
       project.roadmap = {
+        recommendedDatasets: dynamic.datasets.map((d: any) => ({
+          title: d.name || d.title,
+          url: d.url || 'https://kaggle.com',
+          description: d.description || ''
+        })),
+        recommendedTools: dynamic.tools.map((t: any) => ({
+          name: t.name,
+          url: t.url || 'https://github.com',
+          category: t.category || 'Tool'
+        })),
         datasets: dynamic.datasets,
         tools: dynamic.tools,
         checklist
@@ -42,8 +56,17 @@ router.get('/project/:id/roadmap', requireAuth, async (req: AuthenticatedRequest
       await project.save();
     }
 
+    const resolvedDatasets = project.roadmap?.datasets || project.roadmap?.recommendedDatasets || [];
+    const resolvedTools = project.roadmap?.tools || project.roadmap?.recommendedTools || [];
+
     return res.json({
-      roadmap: project.roadmap,
+      roadmap: {
+        datasets: resolvedDatasets,
+        tools: resolvedTools,
+        recommendedDatasets: resolvedDatasets,
+        recommendedTools: resolvedTools,
+        checklist: project.roadmap?.checklist || []
+      },
       readinessPercent: calculateReadiness(project.roadmap?.checklist || [])
     });
   } catch (error) {
@@ -58,9 +81,9 @@ router.patch('/project/:id/roadmap/checklist', requireAuth, async (req: Authenti
     const { id } = req.params;
     const { taskId, isCompleted, userNotes } = req.body;
 
-    const project = await Project.findById(id);
+    const { project, status, error } = await findUserProject(id, req.user?.userId);
     if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
+      return res.status(status).json({ error });
     }
 
     const taskIndex = project.roadmap.checklist.findIndex((t: any) => t.id === taskId);
@@ -91,9 +114,9 @@ router.post('/project/:id/roadmap/task', requireAuth, async (req: AuthenticatedR
     const { id } = req.params;
     const { action, taskText, phase, prompt } = req.body;
 
-    const project = await Project.findById(id);
+    const { project, status, error } = await findUserProject(id, req.user?.userId);
     if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
+      return res.status(status).json({ error });
     }
 
     // Action A: Add Custom Task Manually

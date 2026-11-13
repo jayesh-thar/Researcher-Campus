@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { Project } from '../models/Project';
 import { requireAuth, AuthenticatedRequest } from '../middlewares/authMiddleware';
+import { findUserProject } from '../utils/projectAuth';
 
 const router = Router();
 
@@ -8,10 +9,10 @@ const router = Router();
 router.get('/project/:id/document', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const project = await Project.findById(id);
+    const { project, status, error } = await findUserProject(id, req.user?.userId);
 
     if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
+      return res.status(status).json({ error });
     }
 
     return res.json({
@@ -35,9 +36,9 @@ router.put('/project/:id/document', requireAuth, async (req: AuthenticatedReques
     const { id } = req.params;
     const { template, contentMarkdown, contentHtml, contentLatex } = req.body;
 
-    const project = await Project.findById(id);
+    const { project, status, error } = await findUserProject(id, req.user?.userId);
     if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
+      return res.status(status).json({ error });
     }
 
     project.document = {
@@ -66,10 +67,10 @@ router.put('/project/:id/document', requireAuth, async (req: AuthenticatedReques
 router.post('/project/:id/drive/sync', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const project = await Project.findById(id);
+    const { project, status, error } = await findUserProject(id, req.user?.userId);
 
     if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
+      return res.status(status).json({ error });
     }
 
     const driveFileId = `gdrive-doc-${Date.now()}`;

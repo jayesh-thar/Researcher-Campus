@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { Project } from '../models/Project';
 import { requireAuth, AuthenticatedRequest } from '../middlewares/authMiddleware';
+import { findUserProject } from '../utils/projectAuth';
 
 const router = Router();
 
@@ -17,10 +18,10 @@ export interface AuditIssue {
 router.post('/project/:id/audit/run', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const project = await Project.findById(id);
+    const { project, status, error } = await findUserProject(id, req.user?.userId);
 
     if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
+      return res.status(status).json({ error });
     }
 
     const manuscriptText = project.document?.contentMarkdown || '';
@@ -109,10 +110,10 @@ router.post('/project/:id/audit/run', requireAuth, async (req: AuthenticatedRequ
 router.post('/project/:id/audit/fix', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const project = await Project.findById(id);
+    const { project, status, error } = await findUserProject(id, req.user?.userId);
 
     if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
+      return res.status(status).json({ error });
     }
 
     // Apply 1-Click AI Auto-Fixes

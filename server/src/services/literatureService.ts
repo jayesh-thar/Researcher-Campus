@@ -1,4 +1,4 @@
-﻿import { ILiteratureItem } from '../models/Project';
+import { ILiteratureItem } from '../models/Project';
 import { generateDynamicLiterature, getGenAIClient } from './geminiService';
 
 export interface GateScanResult {

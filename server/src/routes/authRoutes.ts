@@ -170,7 +170,11 @@ router.post('/google', async (req: Request, res: Response) => {
 
 // POST /api/auth/refresh
 router.post('/refresh', (req: Request, res: Response) => {
-  const refreshToken = req.cookies?.refreshToken;
+  const refreshToken =
+    req.cookies?.refreshToken ||
+    req.body?.refreshToken ||
+    (req.headers['x-refresh-token'] as string);
+
   if (!refreshToken) {
     return res.status(401).json({ error: 'Refresh Token Missing' });
   }
