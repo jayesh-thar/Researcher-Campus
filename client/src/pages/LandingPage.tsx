@@ -382,12 +382,14 @@ export function LandingPage() {
               </li>
               <li>
                 <a href="https://github.com/jayesh-thar/Researcher-Campus/blob/main/DEMO.md" target="_blank" rel="noopener noreferrer" className="hover:text-navy-800">
-                  Live Demo Walkthrough (DEMO.md)
+                  <span>Live Demo Walkthrough</span>
+                  <ExternalLink className="w-3 h-3" />
                 </a>
               </li>
               <li>
                 <a href="https://github.com/jayesh-thar/Researcher-Campus/blob/main/ARCHITECTURE.md" target="_blank" rel="noopener noreferrer" className="hover:text-navy-800">
-                  Architecture Topology (ARCHITECTURE.md)
+                  <span>Architecture Topology</span>
+                  <ExternalLink className="w-3 h-3" />
                 </a>
               </li>
             </ul>
