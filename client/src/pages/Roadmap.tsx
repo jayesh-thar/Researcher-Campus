@@ -162,7 +162,7 @@ export function Roadmap() {
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <Navbar />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 flex flex-col space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-6 py-6 sm:py-8 flex flex-col space-y-6">
         {/* Navigation Breadcrumb */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
           <div>
@@ -171,10 +171,10 @@ export function Roadmap() {
               <span>•</span>
               <span>ACTIONABLE IMPLEMENTATION ROADMAP</span>
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Technical Execution & Milestones</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Technical Execution & Milestones</h1>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <Link to={`/project/${id || 'demo'}/whitespace`}>
               <Button variant="outline" size="sm" leftIcon={<ChevronLeft className="w-4 h-4" />}>
                 Back to Stage 3

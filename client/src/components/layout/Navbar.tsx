@@ -49,22 +49,22 @@ export const Navbar: React.FC<NavbarProps> = ({ user: propUser, onLogout: propOn
   return (
     <>
       <ServerStatusGuard />
-      <header className="w-full bg-white border-b border-slate-200 px-6 py-2.5 flex items-center justify-between sticky top-0 z-30 shadow-xs font-sans">
-        <div className="flex items-center space-x-4">
-          <Link to="/" className="flex items-center space-x-2.5">
+      <header className="w-full bg-white border-b border-slate-200 px-3.5 sm:px-6 py-2.5 flex items-center justify-between sticky top-0 z-30 shadow-xs font-sans">
+        <div className="flex items-center space-x-2 sm:space-x-4">
+          <Link to="/" className="flex items-center space-x-2 sm:space-x-2.5 shrink-0">
             <div className="w-8 h-8 bg-navy-800 text-white flex items-center justify-center font-bold text-sm rounded">
               RC
             </div>
-            <div className="flex items-center space-x-2">
-              <span className="font-bold text-slate-900 text-sm tracking-tight">Researcher Campus</span>
-              <span className="text-[10px] font-mono bg-navy-800/10 text-navy-800 px-1.5 py-0.5 rounded border border-navy-800/20 font-semibold">
+            <div className="flex items-center space-x-1.5 sm:space-x-2">
+              <span className="font-bold text-slate-900 text-xs sm:text-sm tracking-tight truncate max-w-[130px] sm:max-w-none">Researcher Campus</span>
+              <span className="hidden xs:inline-block text-[10px] font-mono bg-navy-800/10 text-navy-800 px-1.5 py-0.5 rounded border border-navy-800/20 font-semibold">
                 v1.0.0-beta
               </span>
             </div>
           </Link>
         </div>
 
-        <div className="flex items-center space-x-3 sm:space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4">
           {/* GitHub Repo & Star Counter */}
           <a
             href="https://github.com/jayesh-thar/Researcher-Campus"

@@ -14,7 +14,7 @@ export function NotFound() {
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <Navbar />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-6 py-16 flex flex-col items-center justify-center">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-3.5 sm:px-6 py-10 sm:py-16 flex flex-col items-center justify-center">
         <Card className="w-full bg-white border-slate-200 p-8 sm:p-12 shadow-sm text-center space-y-6">
           {/* Visual Icon Badge */}
           <div className="w-16 h-16 bg-navy-50 border border-navy-200 rounded-2xl flex items-center justify-center mx-auto text-navy-800 shadow-xs">

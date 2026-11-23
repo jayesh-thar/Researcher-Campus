@@ -170,15 +170,15 @@ ${markdown.slice(0, 400)}...
       <Navbar />
 
       {/* Studio Header Toolbar */}
-      <header className="w-full bg-white border-b border-slate-200 px-6 py-2.5 flex flex-wrap items-center justify-between gap-4 sticky top-[57px] z-20 shadow-xs">
-        <div className="flex items-center space-x-3">
+      <header className="w-full bg-white border-b border-slate-200 px-3.5 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 sticky top-[57px] z-20 shadow-xs">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <div className="flex items-center space-x-2 text-xs font-mono text-navy-800 font-semibold">
             <span>STAGE 5 OF 7</span>
             <span>•</span>
             <span>PAPER DRAFTING STUDIO</span>
           </div>
 
-          <div className="h-4 w-px bg-slate-200" />
+          <div className="hidden sm:block h-4 w-px bg-slate-200" />
 
           {/* Template Selector */}
           <div className="flex items-center space-x-1.5 text-xs">
@@ -197,7 +197,7 @@ ${markdown.slice(0, 400)}...
         </div>
 
         {/* Sync Status & Action Controls */}
-        <div className="flex items-center space-x-3 text-xs">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs">
           <div className="flex items-center space-x-1.5 font-mono text-slate-600 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded">
             <Cloud className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
             <span>{syncStatus}</span>
@@ -224,9 +224,9 @@ ${markdown.slice(0, 400)}...
       </header>
 
       {/* Main Studio: Split-Screen Editor + AI Assistant */}
-      <main className="flex-1 max-w-[1600px] w-full mx-auto p-4 grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Left Column: Markdown Editor (6 cols) */}
-        <div className="lg:col-span-5 flex flex-col h-[750px] bg-white border border-slate-200 rounded shadow-xs overflow-hidden">
+      <main className="flex-1 max-w-[1600px] w-full mx-auto p-3 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* Left Column: Markdown Editor (5 cols) */}
+        <div className="lg:col-span-5 flex flex-col h-[480px] sm:h-[600px] lg:h-[750px] bg-white border border-slate-200 rounded shadow-xs overflow-hidden">
           <div className="bg-slate-50 border-b border-slate-200 px-4 py-2 flex items-center justify-between">
             <span className="text-xs font-bold text-slate-700 uppercase tracking-wider font-mono">
               Drafting Canvas (Markdown + LaTeX)
@@ -262,7 +262,7 @@ ${markdown.slice(0, 400)}...
         </div>
 
         {/* Middle Column: Live Rendered IEEE/ACM Preview (4 cols) */}
-        <div className="lg:col-span-4 flex flex-col h-[750px] bg-white border border-slate-200 rounded shadow-xs overflow-hidden">
+        <div className="lg:col-span-4 flex flex-col h-[480px] sm:h-[600px] lg:h-[750px] bg-white border border-slate-200 rounded shadow-xs overflow-hidden">
           <div className="bg-slate-50 border-b border-slate-200 px-4 py-2 flex items-center justify-between">
             <span className="text-xs font-bold text-slate-700 uppercase tracking-wider font-mono">
               Live Publication Preview ({template})
@@ -287,7 +287,7 @@ ${markdown.slice(0, 400)}...
         </div>
 
         {/* Right Column: AI Co-Writer Assistant (3 cols) */}
-        <div className="lg:col-span-3 flex flex-col h-[750px] bg-white border border-slate-200 rounded shadow-xs overflow-hidden">
+        <div className="lg:col-span-3 flex flex-col h-[480px] sm:h-[600px] lg:h-[750px] bg-white border border-slate-200 rounded shadow-xs overflow-hidden">
           <div className="bg-slate-50 border-b border-slate-200 px-4 py-2 flex items-center justify-between">
             <div className="flex items-center space-x-1.5">
               <Sparkles className="w-4 h-4 text-amber-500" />

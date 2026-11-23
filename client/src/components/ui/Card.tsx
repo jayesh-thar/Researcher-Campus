@@ -18,10 +18,13 @@ export const Card: React.FC<CardProps> = ({
   noPadding = false,
   ...props
 }) => {
+  const hasHeaderOrFooter = Boolean(header || footer);
+
   return (
     <div
       className={twMerge(
-        'bg-white border border-slate-200 rounded text-slate-800 shadow-sm transition-shadow hover:shadow',
+        'bg-white border border-slate-200 rounded-xl text-slate-800 shadow-xs transition-shadow',
+        !hasHeaderOrFooter && !noPadding && 'p-5',
         className
       )}
       {...props}
@@ -31,7 +34,11 @@ export const Card: React.FC<CardProps> = ({
           {header}
         </div>
       )}
-      <div className={clsx(!noPadding && 'p-5')}>{children}</div>
+      {hasHeaderOrFooter ? (
+        <div className={clsx(!noPadding && 'p-5')}>{children}</div>
+      ) : (
+        children
+      )}
       {footer && (
         <div className="px-5 py-3 border-t border-slate-200 bg-slate-50/50 flex items-center justify-between text-xs text-slate-500">
           {footer}

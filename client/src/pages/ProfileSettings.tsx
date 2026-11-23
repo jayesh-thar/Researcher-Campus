@@ -128,7 +128,7 @@ export function ProfileSettings() {
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <Navbar user={{ name, email }} onLogout={handleLogout} />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-6 py-8 flex flex-col space-y-6">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-3.5 sm:px-6 py-6 sm:py-8 flex flex-col space-y-6">
         {/* Profile Overview Card */}
         <Card className="bg-white border-slate-200">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">

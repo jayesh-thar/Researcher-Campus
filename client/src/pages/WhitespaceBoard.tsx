@@ -133,7 +133,7 @@ export function WhitespaceBoard() {
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <Navbar />
 
-      <main className="flex-1 max-w-6xl w-full mx-auto px-6 py-8 flex flex-col space-y-6">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-3.5 sm:px-6 py-6 sm:py-8 flex flex-col space-y-6">
         {/* Stage Header Breadcrumb */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
           <div>
@@ -142,7 +142,7 @@ export function WhitespaceBoard() {
               <span>•</span>
               <span>WHITESPACE BOARD & COMPETITOR MATRIX</span>
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Academic Literature Whitespace Matrix</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Academic Literature Whitespace Matrix</h1>
             {projectTitle && (
               <p className="text-xs text-slate-600 font-mono mt-0.5 truncate max-w-2xl">
                 Topic: {projectTitle}
@@ -150,7 +150,7 @@ export function WhitespaceBoard() {
             )}
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <Button
               variant="outline"
               size="sm"

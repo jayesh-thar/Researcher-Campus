@@ -229,7 +229,7 @@ export function Onboarding() {
               <select
                 value={primaryDomain}
                 onChange={(e) => setPrimaryDomain(e.target.value)}
-                className="w-full text-xs bg-white border border-slate-300 rounded px-3 py-2.5 text-slate-800 font-medium focus:outline-none focus:ring-1 focus:ring-navy-800 shadow-2xs"
+                className="w-full text-xs bg-white border border-slate-300 rounded px-3 py-2.5 text-slate-800 font-medium focus:outline-none focus:ring-1 focus:ring-navy-800 shadow-xs"
               >
                 {RESEARCH_DOMAINS.map((d) => (
                   <option key={d} value={d}>

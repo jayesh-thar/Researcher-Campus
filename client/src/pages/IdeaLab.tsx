@@ -124,7 +124,7 @@ export function IdeaLab() {
         </div>
       )}
 
-      <main className="flex-1 max-w-5xl w-full mx-auto px-6 py-8 flex flex-col space-y-6">
+      <main className="flex-1 max-w-5xl w-full mx-auto px-3.5 sm:px-6 py-6 sm:py-8 flex flex-col space-y-6">
         {/* Header Title */}
         <div className="border-b border-slate-200 pb-4">
           <div className="flex items-center space-x-2 text-xs font-mono text-navy-800 mb-1 font-semibold">
@@ -132,7 +132,7 @@ export function IdeaLab() {
             <span>•</span>
             <span>IDEA LAB & ACADEMIC RE-FORMULATION</span>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Formulate Your Research Proposal</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Formulate Your Research Proposal</h1>
           <p className="text-xs text-slate-600 mt-1">
             Enter your raw research idea or paste an existing draft. Refine into a publication-ready academic proposal or proceed directly to literature scanning.
           </p>

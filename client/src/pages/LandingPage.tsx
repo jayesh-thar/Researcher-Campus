@@ -164,7 +164,7 @@ export function LandingPage() {
       {/* HERO SECTION WITH GSAP ANIMATIONS */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-6 py-12 flex flex-col justify-center space-y-16">
         <div ref={heroRef} className="max-w-4xl space-y-6">
-          <div ref={badgeRef} className="inline-flex items-center space-x-2 bg-white border border-slate-300 px-3.5 py-1.5 rounded text-xs text-navy-800 font-semibold shadow-2xs">
+          <div ref={badgeRef} className="inline-flex items-center space-x-2 bg-white border border-slate-300 px-3.5 py-1.5 rounded text-xs text-navy-800 font-semibold shadow-xs">
             <Sparkles className="w-4 h-4 text-navy-800 shrink-0" />
             <span>Autonomous AI Research Environment • Public Beta 1.0</span>
           </div>
@@ -197,7 +197,7 @@ export function LandingPage() {
               href="https://github.com/jayesh-thar/Researcher-Campus"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center space-x-2 bg-white border border-slate-300 hover:bg-slate-100 text-slate-800 px-5 py-2.5 rounded font-medium text-sm transition-colors shadow-2xs"
+              className="inline-flex items-center space-x-2 bg-white border border-slate-300 hover:bg-slate-100 text-slate-800 px-5 py-2.5 rounded font-medium text-sm transition-colors shadow-xs"
             >
               <Github className="w-4 h-4 text-slate-700" />
               <span>GitHub Repository</span>
@@ -245,7 +245,7 @@ export function LandingPage() {
                 onClick={() => setActiveStageTab(stg.num)}
                 className={`px-3 py-1.5 rounded text-xs font-semibold whitespace-nowrap transition-colors border ${
                   activeStageTab === stg.num
-                    ? 'bg-navy-800 text-white border-navy-900 shadow-2xs'
+                    ? 'bg-navy-800 text-white border-navy-900 shadow-xs'
                     : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
                 }`}
               >
