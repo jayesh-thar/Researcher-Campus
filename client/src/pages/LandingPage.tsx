@@ -383,7 +383,7 @@ export function LandingPage() {
               <li>
                 <a href="https://github.com/jayesh-thar/Researcher-Campus/blob/main/DEMO.md" target="_blank" rel="noopener noreferrer" className="hover:text-navy-800 flex items-center space-x-1">
                   <span>Live Demo Walkthrough</span>
-                  <ExternalLink className="w-3git  h-3" />
+                  <ExternalLink className="w-3 h-3" />
                 </a>
               </li>
               <li>
